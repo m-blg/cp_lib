@@ -1,6 +1,7 @@
 
 #include "mbgldef.h"
-#include "stdlib.h"
+#include "memory.cc"
+
 
 namespace cp {
 
@@ -20,7 +21,7 @@ namespace array {
     }
 
     template <typename T>
-    static T pop(T* buffer, u32* len) {
+    static T pop(T* buffer, u32* len) { // remove last and return, if don't want to return, use remove(last) instead
         (*len)--;
         return buffer[(*len)];
     }
@@ -113,11 +114,22 @@ struct StaticArray {
     
 };
 
+template <typename T, u32 t_count>
+using sarr = StaticArray<T, t_count>;
+
+
 template <typename T>
 struct DynamicArray {
-    u32 capacity;
+    u32 capacity; // max count of T
     u32 len;
     T* buffer;
+
+    DynamicArray() = default;
+    DynamicArray(u32 initial_capacity)
+    : capacity(initial_capacity), len(0) {
+        buffer = alloc<T>(initial_capacity);
+    }
+    ~DynamicArray() = default;
     
     void push(T* item) {
         array::push(buffer, &len, item);
@@ -138,12 +150,19 @@ struct DynamicArray {
         array::push(buffer, &len, index);
     }
 
+    T last() {
+        return buffer[len - 1];
+    }
+
     T& operator[](u32 index) {
         return buffer[index];
     }
 };
 
+template <typename T>
+using darr = DynamicArray<T>;
 
+}
 //template <typename T>
 //void static_array_push_back(void* array, T value) {
     //static_array_push_back();
