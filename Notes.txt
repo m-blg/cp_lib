@@ -1,0 +1,5 @@
+
+T* p; - pointer to a value or array of values or just arbitraty chunk of memory.
+Expected to be changed.
+
+T *p; equivalent to T& p; meaning reference to value.

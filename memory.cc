@@ -1,5 +1,8 @@
+
+#pragma once
 #include "mbgldef.h"
 #include "stdlib.h"
+#include "stdio.h"
 
 namespace cp {
 
@@ -15,15 +18,30 @@ T* alloc(u32 count) {
 
 template <typename T>
 struct UniquePointer {
-    T* _ptr;
+    T* ptr;
 
-    ~UniquePointer() { free(_ptr); }
+    UniquePointer() = default;
+    UniquePointer(T* other) {
+        ptr = other;
+    }
+    ~UniquePointer() { free(ptr); printf("Unique dealoc\n"); }
     
+    T* operator=(T* other) {
+        ptr = other;
+        return ptr;
+    }
     T* operator->() {
-        return _ptr;
+        return ptr;
     }
     T& operator*() {
-        return &_ptr;
+        return *ptr;
+    }
+    T& operator[](u32 index) {
+        return ptr[index];
+    }
+    
+    explicit operator T*() {
+        return ptr;
     }
 };
 

@@ -13,4 +13,4 @@ typedef unsigned long u64;
 typedef float f32;
 typedef double f64;
 
-#define null ((void*)0)
+#define null nullptr
