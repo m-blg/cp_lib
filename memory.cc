@@ -24,7 +24,7 @@ struct UniquePointer {
     UniquePointer(T* other) {
         ptr = other;
     }
-    ~UniquePointer() { free(ptr); printf("Unique dealoc\n"); }
+    ~UniquePointer() { delete[] ptr; printf("Unique dealoc\n"); }
     
     T* operator=(T* other) {
         ptr = other;
@@ -40,7 +40,7 @@ struct UniquePointer {
         return ptr[index];
     }
     
-    explicit operator T*() {
+    operator T*() {
         return ptr;
     }
 };

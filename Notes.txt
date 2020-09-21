@@ -3,3 +3,14 @@ T* p; - pointer to a value or array of values or just arbitraty chunk of memory.
 Expected to be changed.
 
 T *p; equivalent to T& p; meaning reference to value.
+
+
+Variants:
+
+1:
+
+struct sbuf<int, 32> - wrapper of int[32] with dynamic bounds checking in debug mode.
+
+I guess it's simpler/better to use multiple...
+
+Basically I need a way to see where I exceed array/memory_buffer limits.

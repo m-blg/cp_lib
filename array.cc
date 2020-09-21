@@ -2,6 +2,7 @@
 #include "mbgldef.h"
 #include "basic.cc"
 #include "memory.cc"
+#include "cassert"
 
 
 namespace cp {
@@ -73,13 +74,21 @@ namespace array {
         (*len)++;
     }
 
+    //template <typename T>
+    //void dpushp(T* buffer, u32 *len, u32 *capacity, T *item) { // dynamic push with pointer
+        //if (len >= capacity) {
+            //dresize(buffer, capacity, 2 * (*capacity));
+        //}
+        //buffer[(*len)] = *item;
+        //(*len)++;
+    //}
+
     template <typename T>
-    void dpushp(T* buffer, u32 *len, u32 *capacity, T *item) { // dynamic push with pointer
-        if (len >= capacity) {
-            dresize(buffer, capacity, 2 * (*capacity));
+    void dpush_range(T* *buffer, u32 *len, u32 *capacity, T* items, u32 items_count) {
+        T* p_items_end = items + items_count;
+        for (T* p = items; p < p_items_end; p++) {
+            dpush(buffer, len, capacity, *p);
         }
-        buffer[(*len)] = *item;
-        (*len)++;
     }
 
     void raw_print(const char* item_fmt, i8* buffer, u32 stride, u32 len) {
@@ -98,61 +107,67 @@ namespace array {
     }
 
 };
-    
 
+// wrapper arround T[t_capacity], t_capacity - buffer capacity in items
+template <typename T, u32 t_capacity>
+struct StaticBuffer {
+    T buffer[t_capacity];
 
-template <typename T, u32 t_count>
-struct ManualStaticArray {
-    u32 len;
-    T buffer[t_count];
-    
-    void init() { len = 0; }
-    
-    u32 count() {
-        return t_count;
-    }
-    
-    void push(T item) {
-        array::push(buffer, &len, item);
-    }
-
-    T pop() {
-        return array::pop(buffer, &len);
-    }
-
-    void add(T item, u32 index) {
-        array::add(buffer, &len, item, index);
-    }
-
-    void remove(u32 index) {
-        array::remove(buffer, &len, index);
-    }
-
-    void print(const char* item_fmt) {
-        array::print(item_fmt, buffer, len);
-    }
+    u32 capacity() { return t_capacity; }
+    T* begin() { return buffer; }
+    T* end() { return buffer + t_capacity; }
 
     T& operator[](u32 index) {
+        assert(("Index out of range", 0 <= index < t_capacity));
         return buffer[index];
     }
-    
 };
 
-template <typename T, u32 t_count>
-using msarr = ManualStaticArray<T, t_count>;
+template <typename T, u32 t_capacity>
+using sbuf = StaticBuffer<T, t_capacity>;
 
-template <typename T, u32 t_count>
+
+template <typename T>
+struct DynamicBuffer {
+    u32 capacity; // in items
+    T* buffer;
+    T* begin() { return buffer; }
+    T* end() { return buffer + capacity; }
+
+    void init(u32 initial_capacity=0) { 
+        capacity = initial_capacity; 
+        buffer = alloc<T>(initial_capacity); 
+    }
+    void shut() { free(buffer); }
+
+    T& operator[](u32 index) {
+        assert(("Index out of range", 0 <= index < capacity));
+        return buffer[index];
+    }
+};
+
+template <typename T>
+using dbuf = DynamicBuffer<T>;
+
+/*namespace buffer {*/
+/*template <typename T, u32 t_capacity>*/
+/*T *static_buffer_get(StaticBuffer<T, t_capacity> *buffer, u32 index) {*/
+/*#if CP_DEBUG*/
+    /*assert()*/
+/*#endif*/
+    /*return buffer->ptr[index];*/
+/*}*/
+/*}*/
+
+template <typename T, u32 t_capacity>
 struct StaticArray {
     u32 len;
-    T buffer[t_count];
+    T buffer[t_capacity];
     
-    StaticArray() 
-    : len(0) {} 
-
     void init() { len = 0; }
     
-    u32 count() {
-        return t_count;
+    u32 capacity() {
+        return t_capacity;
     }
     
     void push(T item) {
@@ -176,76 +191,23 @@ struct StaticArray {
     }
 
     T& operator[](u32 index) {
+        assert(("Index out of range", 0 <= index < t_capacity));
         return buffer[index];
     }
+    
 };
 
-template <typename T, u32 t_count>
-using sarr = StaticArray<T, t_count>;
+template <typename T, u32 t_capacity>
+using sarr = StaticArray<T, t_capacity>;
 
 
 template <typename T>
 struct DynamicArray {
     u32 capacity; // max count of T
     u32 len;
-    uptr<T> buffer;
-
-    DynamicArray() 
-    : capacity(0), len(0), buffer(null) {}
-    DynamicArray(u32 initial_capacity)
-    : capacity(initial_capacity), len(0) {
-        buffer = alloc<T>(initial_capacity);
-    }
-    ~DynamicArray() = default;
-    
-    void push(T item) {
-        array::push(buffer.ptr, &len, item);
-    }
-    void dpush(T item) {
-        array::dpush(&buffer.ptr, &len, &capacity, item);
-    }
-
-    T pop() {
-        return array::pop(buffer.ptr, &len);
-    }
-
-    void add(T item, u32 index) {
-        array::add(buffer.ptr, &len, item, index);
-    }
-
-    void remove(u32 index) {
-        array::remove(buffer.ptr, &len, index);
-    }
-
-    T last() {
-        return buffer[len - 1];
-    }
-
-    void print(const char* item_fmt) {
-        array::print(item_fmt, buffer.ptr, len);
-    }
-
-    T& operator[](u32 index) {
-        return buffer[index];
-    }
-};
-
-template <typename T>
-using darr = DynamicArray<T>;
-
-
-template <typename T>
-struct ManualDynamicArray {
-    u32 capacity; // max count of T
-    u32 len;
     T* buffer;
 
-    static ManualDynamicArray qinit(u32 initial_capacity) {
-        ManualDynamicArray arr = {initial_capacity, 0, alloc<T>(initial_capacity)};
-        return arr;
-    }
-    
-    void init(u32 initial_capacity) { 
+    void init(u32 initial_capacity=0) { 
         capacity = initial_capacity; 
         len = 0; 
         buffer = alloc<T>(initial_capacity); 
@@ -280,25 +242,33 @@ struct ManualDynamicArray {
     }
 
     T& operator[](u32 index) {
+        assert(("Index out of range", 0 <= index < capacity));
         return buffer[index];
     }
 };
 
 template <typename T>
-using mdarr = ManualDynamicArray<T>;
+using darr = DynamicArray<T>;
+
+namespace array {
+
+    template <typename T, u32 t_items_count>
+    void dpush_range(darr<T> *array, sbuf<T, t_items_count> *items) {
+        T* p_items_end = items->buffer + items->capacity();
+        for (T* p = items; p < p_items_end; p++) {
+            dpush(array->buffer, array->len, array->capacity, *p);
+        }
+    }
+
+    template <typename T, u32 t_items_count>
+    void dpush_range2(darr<T> *array, T items[t_items_count]) {
+        T* p_items_end = items + t_items_count;
+        for (T* p = items; p < p_items_end; p++) {
+            dpush(array->buffer, array->len, array->capacity, *p);
+        }
+    }
+
 
 }
-//template <typename T>
-//void static_array_push_back(void* array, T value) {
-    //static_array_push_back();
-    //static_array_insert();
-    //static_array_append();
-    //static_array_do_some_fansy_stuff();
-    //staticArrayDoSomeFansyStuff();
-//}
 
-//void staticArrayPushBack() {
-    //staticArrayPushBack();
-    //staticArrayInsert();
-    //staticArrayAppend();
-//}
+}
