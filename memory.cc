@@ -6,9 +6,16 @@
 
 namespace cp {
 
+namespace memory {
+
 template <typename T>
 T* alloc(u32 count) {
     return (T*)malloc(count * sizeof(T));
+}
+
+template <typename T>
+T* nalloc(u32 count) {
+    return (T*)calloc(count, sizeof(T));
 }
 
 #define alloci(x) alloc<int>((x))
@@ -47,5 +54,9 @@ struct UniquePointer {
 
 template <typename T>
 using uptr = UniquePointer<T>;
+
+}
+
+namespace m = memory;
 
 }

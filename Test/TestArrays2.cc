@@ -5,30 +5,43 @@
 using namespace cp;
 
 void test1() {
-    sbuf<int, 5> stemp = {{3, 5, 3, 5, 1}};
-    array::print("%d ", stemp.buffer, stemp.capacity());
+    sbuff<int, 5> stemp = {{3, 5, 3, 5, 1}};
+    array::print(stemp.buffer, stemp.capacity(), "%d ");
 
 
-    dbuf<int> dtemp = {};
+    dbuff<int> dtemp = {};
     dtemp.capacity = 5;
     dtemp = {};
     dtemp.init(5);
-    array::print("%d ", dtemp.buffer, dtemp.capacity);
+    array::print(dtemp.buffer, dtemp.capacity, "%d ");
 
 
     darr<int> a;
-    sbuf<int, 3> t = {3, 5, 3}; 
-    array::dpush_range(&a, &t);
-    a.print("%d ");
+    {
+        array::dpush_range<3>(&a, {3, 5, 3});
+        array::print(&a, "%d ");
+    }
 
     int buf[5] = {3, 5, 3, 1, 4};
 }
 
-template <u32 t_items_count>
-u32 foo(sbuf<int, t_items_count> a) {
-    return t_items_count;
+void test_dynamic_array() {
+    darr<f64> da;
+    {
+        da.init();
+        array::dpush_range<5>(&da, {3, 2, 3, 4, 5});
+        array::print(&da, "%f ");
+        puts("");
+    }
+
+    darr<i32> da2;
+    da2.init_range<3>(5, {3, 5, 6});
+    array::print(&da2, "%d ");
+
+    da.shut();
+    da2.shut();
 }
 
 int main() {
-    test1();
+    test_dynamic_array();
 }
