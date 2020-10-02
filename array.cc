@@ -1,3 +1,4 @@
+#pragma once
 
 #include "mbgldef.h"
 #include "basic.cc"
@@ -255,6 +256,16 @@ struct DynamicBuffer2 {
         x_capacity = init_x_capacity;
         buffer = m::alloc<T>(y_capacity * x_capacity);
     }
+    void init_const(u32 init_y_capacity, u32 init_x_capacity, T value) {
+        y_capacity = init_y_capacity;
+        x_capacity = init_x_capacity;
+        buffer = m::alloc<T>(y_capacity * x_capacity);
+        T* endp = buffer + total_capacity();
+        for (T* p = buffer; p < endp; p++) {
+            *p = value;
+        }
+    }
+
 
     void shut() {
         free(buffer);
@@ -274,7 +285,18 @@ using dbuff2 = DynamicBuffer2<T>;
 
 namespace buffer2 {
 
-    template<typename T>
+    template <typename T>
+    void print(dbuff2<T> *self, const char* item_fmt, const char* row_delim="\n") {
+        u32 len = self->total_capacity();
+        for (u32 i = 0; i < len; i++) {
+            printf(item_fmt, self->buffer[i]);
+
+            if ((i % self->x_capacity) == self->x_capacity - 1)
+                printf(row_delim);
+        }
+    }
+
+    template <typename T>
     void scan(dbuff2<T> *self, const char* item_fmt) {
         array::scan(self->buffer, self->total_capacity(), item_fmt);
     }

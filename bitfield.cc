@@ -1,3 +1,4 @@
+#pragma once
 
 #include "mbgldef.h"
 #include "memory.cc"
