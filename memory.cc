@@ -1,8 +1,8 @@
 
 #pragma once
 #include "mbgldef.h"
-#include "stdlib.h"
-#include "stdio.h"
+#include <stdlib.h>
+#include <stdio.h>
 
 namespace cp {
 

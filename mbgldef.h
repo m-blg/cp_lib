@@ -1,5 +1,7 @@
 #pragma once
 
+#include <limits.h>
+
 typedef signed char i8;
 typedef signed short i16;
 typedef signed int i32;
@@ -14,3 +16,5 @@ typedef float f32;
 typedef double f64;
 
 #define null nullptr
+
+

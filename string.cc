@@ -7,7 +7,7 @@ struct StackString {
     char buffer[t_count];
     u32 len;
 
-    inline count() {
+    inline i32 count() {
         return t_count;
     }
 };

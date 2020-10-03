@@ -2,7 +2,7 @@
 
 #include "mbgldef.h"
 #include "memory.cc"
-#include "cassert"
+#include <cassert>
 
 namespace cp {
 
@@ -45,29 +45,29 @@ namespace cp {
         // in bytes
         constexpr u32 capacity() { return bitfield::t_byte_count(t_bit_count); }
 
-        inline bool get_bit(u32 bit_index) {
+        static inline bool get_bit(StaticBitField *self, u32 bit_index) {
             assert(("Bit index out of range", bit_index < t_bit_count));
-            return bitfield::get_bit(buffer, bit_index);
+            return bitfield::get_bit(self->buffer, bit_index);
         }
 
-        inline void set_bit_high(u32 bit_index) {
+        static inline void set_bit_high(StaticBitField *self, u32 bit_index) {
             assert(("Bit index out of range", bit_index < t_bit_count));
-            return bitfield::set_bit_high(buffer, bit_index);
+            return bitfield::set_bit_high(self->buffer, bit_index);
         }
 
-        inline void set_bit_low(u32 bit_index) {
+        static inline void set_bit_low(StaticBitField *self, u32 bit_index) {
             assert(("Bit index out of range", bit_index < t_bit_count));
-            return bitfield::set_bit_low(buffer, bit_index);
+            return bitfield::set_bit_low(self->buffer, bit_index);
         }
 
-        inline void flip_bit(u32 bit_index) {
+        static inline void flip_bit(StaticBitField *self, u32 bit_index) {
             assert(("Bit index out of range", bit_index < t_bit_count));
-            return bitfield::flip_bit(buffer, bit_index);
+            return bitfield::flip_bit(self->buffer, bit_index);
         }
 
-        inline void set_bit(u32 bit_index, bool value) {
+        static inline void set_bit(StaticBitField *self, u32 bit_index, bool value) {
             assert(("Bit index out of range", bit_index < t_bit_count));
-            return bitfield::set_bit(buffer, bit_index, value);
+            return bitfield::set_bit(self->buffer, bit_index, value);
         }
 
     };
@@ -84,38 +84,38 @@ namespace cp {
         void init_bits(u32 init_bit_count=0) { 
             capacity = bitfield::t_byte_count(init_bit_count); 
             bit_count = init_bit_count;
-            buffer = alloc<u8>(capacity); 
+            buffer = m::alloc<u8>(capacity); 
         }
         void init_bytes(u32 initial_capacity=0) { 
             capacity = initial_capacity; 
             bit_count = initial_capacity * 8u;
-            buffer = alloc<u8>(initial_capacity); 
+            buffer = m::alloc<u8>(initial_capacity); 
         }
         void shut() { free(buffer); }
 
-        inline bool get_bit(u32 bit_index) {
+        static inline bool get_bit(DynamicBitField *self, u32 bit_index) {
             assert(("Bit index out of range", bit_index < bit_count));
-            return bitfield::get_bit(buffer, bit_index);
+            return bitfield::get_bit(self->buffer, bit_index);
         }
 
-        inline void set_bit_high(u32 bit_index) {
+        static inline void set_bit_high(DynamicBitField *self, u32 bit_index) {
             assert(("Bit index out of range", bit_index < bit_count));
-            return bitfield::set_bit_high(buffer, bit_index);
+            return bitfield::set_bit_high(self->buffer, bit_index);
         }
 
-        inline void set_bit_low(u32 bit_index) {
+        static inline void set_bit_low(DynamicBitField *self, u32 bit_index) {
             assert(("Bit index out of range", bit_index < bit_count));
-            return bitfield::set_bit_low(buffer, bit_index);
+            return bitfield::set_bit_low(self->buffer, bit_index);
         }
 
-        inline void flip_bit(u32 bit_index) {
+        static inline void flip_bit(DynamicBitField *self, u32 bit_index) {
             assert(("Bit index out of range", bit_index < bit_count));
-            return bitfield::flip_bit(buffer, bit_index);
+            return bitfield::flip_bit(self->buffer, bit_index);
         }
 
-        inline void set_bit(u32 bit_index, bool value) {
+        static inline void set_bit(DynamicBitField *self, u32 bit_index, bool value) {
             assert(("Bit index out of range", bit_index < bit_count));
-            return bitfield::set_bit(buffer, bit_index, value);
+            return bitfield::set_bit(self->buffer, bit_index, value);
         }
 
     };
