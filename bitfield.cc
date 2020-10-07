@@ -73,7 +73,7 @@ namespace cp {
     };
     
     template <u32 t_bit_count>
-    using sbitfd = StaticBitField<t_bit_count>;
+    using sbitfld = StaticBitField<t_bit_count>;
 
 
     struct DynamicBitField {
@@ -120,5 +120,5 @@ namespace cp {
 
     };
 
-    using dbitfd = DynamicBitField;
+    using dbitfld = DynamicBitField;
 }

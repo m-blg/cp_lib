@@ -2,6 +2,69 @@
 #include "memory.cc"
 
 namespace cp {
+    
+template <typename T>
+struct Array_Queue {
+    T* buffer;
+    u32 capacity;
+    u32 head_index;
+    u32 len;
+
+    void init(u32 init_capacity) {
+        head_index = 0;
+        len = 0;
+        capacity = init_capacity;
+        buffer = m::alloc<T>(init_capacity);
+    }
+    void shut() {
+        free(buffer);
+        buffer = null;
+        capacity = 0;
+        head_index = 0;
+        len = 0;
+    }
+
+    inline T& get(u32 index) {
+        return buffer[(head_index + index) % capacity];
+    }
+
+    inline bool is_empty() {
+        return (len == 0);
+    }
+
+    T& front() {
+        return buffer[head_index];
+    }
+
+    T& back() {
+        return buffer[(head_index + len - 1) % capacity];
+    }
+
+    // Functions
+
+    static void 
+    enqueue(Array_Queue<T> *self, T item) 
+    {
+        self->get(self->len) = item;
+        self->len++;
+    }
+
+    static void 
+    dequeue(Array_Queue<T> *self) 
+    {
+        self->head_index = (self->head_index + 1) % self->capacity;
+        self->len--;
+    }
+
+};
+
+template <typename T>
+using aqueue = Array_Queue<T>;
+
+using aqueueu = aqueue<u32>;
+using aqueuei = aqueue<i32>;
+using aqueuef = aqueue<f32>;
+using aqueued = aqueue<f64>;
 
 template <typename T>
 struct List_Queue_Node {

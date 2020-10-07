@@ -9,6 +9,29 @@
 
 namespace cp {
 
+namespace buffer {
+    template <typename T>
+    T sum(T* buffer, u32 len) {
+        T out_sum = 0;
+        T* endp = buffer + len;
+        for (T* p = buffer; p < endp; p++) {
+            out_sum += *p;
+        }
+        return out_sum;
+    }
+
+    template <typename T>
+    T sum_lmd(T* buffer, u32 len, T& (*access_lmd)(T*)) {
+        T out_sum = 0;
+        T* endp = buffer + len;
+        for (T* p = buffer; p < endp; p++) {
+            out_sum += access_lmd(p);
+        }
+        return out_sum;
+    }
+
+}
+
 namespace array { 
 
 
@@ -104,6 +127,17 @@ struct StaticBuffer {
 template <typename T, u32 t_capacity>
 using sbuff = StaticBuffer<T, t_capacity>;
 
+template <u32 t_capacity>
+using sbuffu = StaticBuffer<u32, t_capacity>;
+template <u32 t_capacity>
+using sbuffi = StaticBuffer<i32, t_capacity>;
+template <u32 t_capacity>
+using sbufff = StaticBuffer<f32, t_capacity>;
+template <u32 t_capacity>
+using sbuffd = StaticBuffer<f64, t_capacity>;
+template <u32 t_capacity>
+using sbuffb = StaticBuffer<bool, t_capacity>;
+
 
 template <typename T>
 struct DynamicBuffer {
@@ -126,6 +160,12 @@ struct DynamicBuffer {
 
 template <typename T>
 using dbuff = DynamicBuffer<T>;
+
+using dbuffu = DynamicBuffer<u32>;
+using dbuffi = DynamicBuffer<i32>;
+using dbufff = DynamicBuffer<f32>;
+using dbuffd = DynamicBuffer<f64>;
+using dbuffb = DynamicBuffer<bool>;
 
 
 template <typename T, u32 t_capacity>
@@ -206,6 +246,10 @@ struct DynamicArray {
 
     void shut() { free(buffer); }
 
+    bool is_empty() { return (len == 0); }
+
+    T& back() { return buffer[len-1]; }
+
 
     T& operator[](u32 index) {
         assert(("Index out of range", 0 <= index < capacity));
@@ -217,6 +261,10 @@ struct DynamicArray {
 
     static void push(DynamicArray<T> *self, T item) {
         array::push(self->buffer, &self->len, item);
+    }
+
+    static void dpush(DynamicArray<T> *self, T item) {
+        array::dpush(&self->buffer, &self->len, &self->capacity, item);
     }
 
     static T pop(DynamicArray<T> *self) {
@@ -316,6 +364,7 @@ using dbuff2u = DynamicBuffer2<u32>;
 using dbuff2i = DynamicBuffer2<i32>;
 using dbuff2f = DynamicBuffer2<f32>;
 using dbuff2d = DynamicBuffer2<f64>;
+using dbuff2b = DynamicBuffer2<bool>;
 
 
 //namespace mdbuffer {
