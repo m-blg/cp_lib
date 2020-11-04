@@ -9,13 +9,18 @@ namespace cp {
 namespace memory {
 
 template <typename T>
-T* alloc(u32 count) {
+inline T* alloc(u32 count) {
     return (T*)malloc(count * sizeof(T));
 }
 
 template <typename T>
-T* nalloc(u32 count) {
+inline T* nalloc(u32 count) {
     return (T*)calloc(count, sizeof(T));
+}
+
+template <typename T>
+inline T* ralloc(T* ptr, u32 count) {
+    return (T*)realloc(ptr, count * sizeof(T));
 }
 
 #define alloci(x) alloc<int>((x))

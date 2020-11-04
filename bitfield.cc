@@ -1,6 +1,8 @@
 #pragma once
 
 #include "mbgldef.h"
+#include "basic.cc"
+#include "array.cc"
 #include "memory.cc"
 #include <cassert>
 
@@ -33,6 +35,21 @@ namespace cp {
         inline void set_bit(u8* buffer, u32 bit_index, bool value) {
             if (get_bit(buffer, bit_index) != value) {
                 flip_bit(buffer, bit_index);
+            }
+        }
+
+        inline int cmp_bits(u8* first, u8* second, u32 bit_count) {
+            for (u32 i = 0; i < bit_count; i++) {
+                if (get_bit(first, i) != get_bit(second, i)) {
+                    return (get_bit(first, i) ? 1 : -1);
+                }
+            }
+            return 0;
+        }
+
+        inline void print_bits(u8* buffer, u32 bit_count) {
+            for (i32 i = 0; i < bit_count; i++) {
+                printf("%d", get_bit(buffer, i));
             }
         }
     }
@@ -94,28 +111,53 @@ namespace cp {
         void shut() { free(buffer); }
 
         static inline bool get_bit(DynamicBitField *self, u32 bit_index) {
-            assert(("Bit index out of range", bit_index < bit_count));
+            //assert(("Bit index out of range", bit_index < bit_count));
             return bitfield::get_bit(self->buffer, bit_index);
         }
 
         static inline void set_bit_high(DynamicBitField *self, u32 bit_index) {
-            assert(("Bit index out of range", bit_index < bit_count));
+            //assert(("Bit index out of range", bit_index < bit_count));
             return bitfield::set_bit_high(self->buffer, bit_index);
         }
 
         static inline void set_bit_low(DynamicBitField *self, u32 bit_index) {
-            assert(("Bit index out of range", bit_index < bit_count));
+            //assert(("Bit index out of range", bit_index < bit_count));
             return bitfield::set_bit_low(self->buffer, bit_index);
         }
 
         static inline void flip_bit(DynamicBitField *self, u32 bit_index) {
-            assert(("Bit index out of range", bit_index < bit_count));
+            //assert(("Bit index out of range", bit_index < bit_count));
             return bitfield::flip_bit(self->buffer, bit_index);
         }
 
         static inline void set_bit(DynamicBitField *self, u32 bit_index, bool value) {
-            assert(("Bit index out of range", bit_index < bit_count));
+            //assert(("Bit index out of range", bit_index < bit_count));
             return bitfield::set_bit(self->buffer, bit_index, value);
+        }
+
+        static void dpush_bit(DynamicBitField *self, bool value) {
+            u32 len = (self->bit_count + 1u) / 8u + (u32)((self->bit_count + 1u) % 8u > 0);
+            if (len >= self->capacity) {
+                buffer::dresize( &self->buffer, &self->capacity, max(1u, 2u * ((*self).capacity)) );
+            }
+            DynamicBitField::set_bit(self, self->bit_count, value);
+            self->bit_count++;
+        }
+
+        static i32 cmp_bitfld(DynamicBitField *first, DynamicBitField *second) {
+            if (first->bit_count == second->bit_count) {
+                return bitfield::cmp_bits(first->buffer, second->buffer, first->bit_count);
+            } else {
+                return (first->bit_count > second->bit_count ? 1 : -1);
+            }
+        }
+
+        static void print_bits(DynamicBitField *self) {
+            bitfield::print_bits(self->buffer, self->bit_count);
+        }
+
+        bool operator==(DynamicBitField& other) {
+            return (cmp_bitfld(this, &other) == 0);
         }
 
     };
