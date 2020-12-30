@@ -65,22 +65,6 @@ namespace array {
         }
     }
 
-    template <typename T>
-    void print(T* buffer, u32 len, const char* item_fmt) {
-        T* endp = buffer + len;
-        for (T* p = buffer; p < endp; p++) {
-            printf(item_fmt, *p);
-        }
-    }
-
-    template <typename T>
-    void scan(T* buffer, u32 len, const char* item_fmt) {
-        T* p = buffer;
-        T* ep = buffer + len;
-        for (; p < ep; p++) {
-            scanf(item_fmt, p);
-        }
-    }
 
 };
 
@@ -121,7 +105,7 @@ struct StaticArray {
     }
 
     static void print(StaticArray<T, t_capacity> *self, const char* item_fmt) {
-        array::print(self->buffer, self->len, item_fmt);
+        buffer::print(self->buffer, self->len, item_fmt);
     }
 };
 
@@ -199,7 +183,7 @@ struct DynamicArray {
     }
 
     static void print(DynamicArray<T> *self, const char* item_fmt) {
-        array::print(self->buffer, self->len, item_fmt);
+        buffer::print(self->buffer, self->len, item_fmt);
     }
 
     template <u32 t_items_count>
@@ -222,93 +206,6 @@ using darri = DynamicArray<i32>;
 using darrf = DynamicArray<f32>;
 using darrd = DynamicArray<f64>;
 
-
-
-template <typename T>
-struct DynamicBuffer2 {
-    u32 y_capacity; // rows
-    u32 x_capacity; // collumns
-    T* buffer;
-
-    void init(u32 init_y_capacity, u32 init_x_capacity) {
-        y_capacity = init_y_capacity;
-        x_capacity = init_x_capacity;
-        buffer = m::alloc<T>(y_capacity * x_capacity);
-    }
-    void init_const(u32 init_y_capacity, u32 init_x_capacity, T value) {
-        y_capacity = init_y_capacity;
-        x_capacity = init_x_capacity;
-        buffer = m::alloc<T>(y_capacity * x_capacity);
-        T* endp = buffer + total_capacity();
-        for (T* p = buffer; p < endp; p++) {
-            *p = value;
-        }
-    }
-
-
-    void shut() {
-        free(buffer);
-    }
-
-    u32 total_capacity() {
-        return y_capacity * x_capacity;
-    }
-
-    T& get(u32 y_index, u32 x_index) {
-        return buffer[x_capacity * y_index + x_index];
-    }
-
-
-    // Functions
-
-    static void print(DynamicBuffer2<T> *self, const char* item_fmt, const char* row_delim="\n") {
-        u32 len = self->total_capacity();
-        for (u32 i = 0; i < len; i++) {
-            printf(item_fmt, self->buffer[i]);
-
-            if ((i % self->x_capacity) == self->x_capacity - 1)
-                printf(row_delim);
-        }
-    }
-
-    static void scan(DynamicBuffer2<T> *self, const char* item_fmt) {
-        array::scan(self->buffer, self->total_capacity(), item_fmt);
-    }
-};
-
-template <typename T>
-using dbuff2 = DynamicBuffer2<T>;
-
-using dbuff2u = DynamicBuffer2<u32>;
-using dbuff2i = DynamicBuffer2<i32>;
-using dbuff2f = DynamicBuffer2<f32>;
-using dbuff2d = DynamicBuffer2<f64>;
-using dbuff2b = DynamicBuffer2<bool>;
-
-
-//namespace mdbuffer {
-//template <typename T>
-//T& get_item(T* buffer, u32 dim_count, u32 dim_capacity) {
-
-//}
-
-//}
-
-//template <typename T>
-//struct Dynamic_Multidim_Buffer {
-    //u32 dim_capacity;
-    //u32 dim_count;
-    //T* buffer;
-//};
-
-
-//template <typename T, u32 t_dim_count, u32 t_dim_capacity>
-//struct Static_Multidim_Array {
-    //u32 len;
-    //T buffer[t_dim_capacity * t_dim_count];
-
-    
-//};
 
 }
 

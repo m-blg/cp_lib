@@ -15,26 +15,20 @@ namespace buffer {
     }
 
     template <typename T>
-    T sum(T* begin, T* end) {
-        T out_sum = 0;
-        for (T* p = begin; p <= end; p++) {
-            out_sum += *p;
+    void scan(T* buffer, u32 len, const char* item_fmt) {
+        T* p = buffer;
+        T* ep = buffer + len;
+        for (; p < ep; p++) {
+            scanf(item_fmt, p);
         }
-        return out_sum;
     }
 
     template <typename T>
-    T sum_lmd(T* begin, T* end, T& (*access_lmd)(T*)) {
-        T out_sum = 0;
-        for (T* p = begin; p <= end; p++) {
-            out_sum += access_lmd(p);
+    void print(T* buffer, u32 len, const char* item_fmt) {
+        T* endp = buffer + len;
+        for (T* p = buffer; p < endp; p++) {
+            printf(item_fmt, *p);
         }
-        return out_sum;
-    }
-
-    template <typename T>
-    void qsort(T* buffer, u32 len, bool (*greater_lmd)(T*, T*)) {
-
     }
 
 }
@@ -51,6 +45,10 @@ struct StaticBuffer {
     T& operator[](u32 index) {
         assert(("Index out of range", 0 <= index < t_capacity));
         return buffer[index];
+    }
+
+    static void print(StaticBuffer<T, t_capacity> *self, const char* item_fmt) {
+        buffer::print(self->buffer, t_capacity, item_fmt);
     }
 };
 
@@ -83,7 +81,7 @@ struct DynamicBuffer {
     void shut() { free(buffer); capacity = 0; }
 
     T& operator[](u32 index) {
-        assert(("Index out of range", index < capacity));
+        assert(("Index out of range", 0 <= index < capacity));
         return buffer[index];
     }
 
@@ -109,6 +107,10 @@ struct DynamicBuffer {
         }
         return out_sum;
     }
+
+    static void print(DynamicBuffer<T> *self, const char* item_fmt) {
+        buffer::print(self->buffer, self->capacity, item_fmt);
+    }
 };
 
 template <typename T>
@@ -119,5 +121,93 @@ using dbuffi = DynamicBuffer<i32>;
 using dbufff = DynamicBuffer<f32>;
 using dbuffd = DynamicBuffer<f64>;
 using dbuffb = DynamicBuffer<bool>;
+
+
+template <typename T>
+struct DynamicBuffer2 {
+    T* buffer;
+    u32 y_capacity; // rows
+    u32 x_capacity; // collumns
+
+    void init(u32 init_y_capacity, u32 init_x_capacity) {
+        y_capacity = init_y_capacity;
+        x_capacity = init_x_capacity;
+        buffer = m::alloc<T>(y_capacity * x_capacity);
+    }
+    void init_const(u32 init_y_capacity, u32 init_x_capacity, T value) {
+        y_capacity = init_y_capacity;
+        x_capacity = init_x_capacity;
+        buffer = m::alloc<T>(y_capacity * x_capacity);
+        T* endp = buffer + total_capacity();
+        for (T* p = buffer; p < endp; p++) {
+            *p = value;
+        }
+    }
+
+
+    void shut() {
+        free(buffer);
+    }
+
+    u32 total_capacity() {
+        return y_capacity * x_capacity;
+    }
+
+    T& get(u32 y_index, u32 x_index) {
+        return buffer[x_capacity * y_index + x_index];
+    }
+
+
+    // Functions
+
+    static void print(DynamicBuffer2<T> *self, const char* item_fmt, const char* row_delim="\n") {
+        u32 len = self->total_capacity();
+        for (u32 i = 0; i < len; i++) {
+            printf(item_fmt, self->buffer[i]);
+
+            if ((i % self->x_capacity) == self->x_capacity - 1)
+                printf(row_delim);
+        }
+    }
+
+};
+
+template <typename T>
+using dbuff2 = DynamicBuffer2<T>;
+
+using dbuff2u = DynamicBuffer2<u32>;
+using dbuff2i = DynamicBuffer2<i32>;
+using dbuff2f = DynamicBuffer2<f32>;
+using dbuff2d = DynamicBuffer2<f64>;
+using dbuff2b = DynamicBuffer2<bool>;
+
+
+template<typename T>
+static void dbuff2_scan(DynamicBuffer2<T> *self, const char* item_fmt) {
+    buffer::scan(self->buffer, self->total_capacity(), item_fmt);
+}
+//namespace mdbuffer {
+//template <typename T>
+//T& get_item(T* buffer, u32 dim_count, u32 dim_capacity) {
+
+//}
+
+//}
+
+//template <typename T>
+//struct Dynamic_Multidim_Buffer {
+    //u32 dim_capacity;
+    //u32 dim_count;
+    //T* buffer;
+//};
+
+
+//template <typename T, u32 t_dim_count, u32 t_dim_capacity>
+//struct Static_Multidim_Array {
+    //u32 len;
+    //T buffer[t_dim_capacity * t_dim_count];
+
+    
+//};
 
 }
