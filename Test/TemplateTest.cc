@@ -7,7 +7,7 @@ void foo(T value) {
 
 // template void foo(float value);
 
-// #define 
+// #define  
 
 int main() {
     // foo(5);

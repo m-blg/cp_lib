@@ -28,38 +28,6 @@ inline T* ralloc(T* ptr, u32 count) {
 #define allocf(x) alloc<float>((x))
 #define allocd(x) alloc<double>((x))
 
-template <typename T>
-struct UniquePointer {
-    T* ptr;
-
-    UniquePointer() = default;
-    UniquePointer(T* other) {
-        ptr = other;
-    }
-    ~UniquePointer() { delete[] ptr; printf("Unique dealoc\n"); }
-    
-    T* operator=(T* other) {
-        ptr = other;
-        return ptr;
-    }
-    T* operator->() {
-        return ptr;
-    }
-    T& operator*() {
-        return *ptr;
-    }
-    T& operator[](u32 index) {
-        return ptr[index];
-    }
-    
-    operator T*() {
-        return ptr;
-    }
-};
-
-template <typename T>
-using uptr = UniquePointer<T>;
-
 }
 
 namespace m = memory;

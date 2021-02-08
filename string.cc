@@ -1,18 +1,16 @@
 
-#include "mbgldef.h"
+#include "array.cc"
 
-template <i32 t_count>
-struct StackString {
-    
-    char buffer[t_count];
-    u32 len;
+namespace cp {
 
-    inline i32 count() {
-        return t_count;
-    }
-};
+template <u32 t_cap>
+using Static_String = Static_Array<char, t_cap>;
+
+template <u32 t_cap>
+using sstr = Static_String<t_cap>;
 
 
-int main() {
+using Dynamic_String = Dynamic_Array<char>;
 
+using dstr = Dynamic_String;
 }
