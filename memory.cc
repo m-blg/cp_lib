@@ -6,20 +6,19 @@
 
 namespace cp {
 
-namespace memory {
 
 template <typename T>
-inline T* alloc(u32 count) {
+inline T* m_alloc(u32 count) {
     return (T*)malloc(count * sizeof(T));
 }
 
 template <typename T>
-inline T* nalloc(u32 count) {
+inline T* m_nalloc(u32 count) {
     return (T*)calloc(count, sizeof(T));
 }
 
 template <typename T>
-inline T* ralloc(T* ptr, u32 count) {
+inline T* m_ralloc(T* ptr, u32 count) {
     return (T*)realloc(ptr, count * sizeof(T));
 }
 
@@ -28,8 +27,6 @@ inline T* ralloc(T* ptr, u32 count) {
 #define allocf(x) alloc<float>((x))
 #define allocd(x) alloc<double>((x))
 
-}
 
-namespace m = memory;
 
 }

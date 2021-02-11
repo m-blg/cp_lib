@@ -1,3 +1,5 @@
+
+
 #pragma once
 
 #include "mbgldef.h"
@@ -7,15 +9,14 @@
 
 namespace cp {
 
-
 template <typename T>
-void buff_dresize(T* *buffer, u32 *cap, u32 new_capacity) {
-    *buffer = m::ralloc(*buffer, new_capacity);
+void dresize(T* *buffer, u32 *cap, u32 new_capacity) {
+    *buffer = m_ralloc(*buffer, new_capacity);
     *cap = new_capacity;
 }
 
 template <typename T>
-void buff_scan(T* buffer, u32 len, const char* item_fmt) {
+void scan(T* buffer, u32 len, const char* item_fmt) {
     T* p = buffer;
     T* ep = buffer + len;
     for (; p < ep; p++) {
@@ -24,22 +25,17 @@ void buff_scan(T* buffer, u32 len, const char* item_fmt) {
 }
 
 template <typename T>
-void buff_print(T* buffer, u32 len, const char* item_fmt) {
+void print(T* buffer, u32 len, const char* item_fmt) {
     T* endp = buffer + len;
     for (T* p = buffer; p < endp; p++) {
         printf(item_fmt, *p);
     }
 }
 
-
 // wrapper arround T[t_cap], t_cap - buffer capa in items
 template <typename T, u32 t_cap>
 struct Static_Buffer {
     T buffer[t_cap];
-
-    constexpr u32 cap() { return t_cap; }
-    constexpr T* begin() { return buffer; }
-    constexpr T* end() { return buffer + t_cap; }
 
     T& operator[](u32 index) {
         assert(("Index out of range", 0 <= index < t_cap));
@@ -62,24 +58,27 @@ using sbuffd = Static_Buffer<f64, t_cap>;
 template <u32 t_cap>
 using sbuffb = Static_Buffer<bool, t_cap>;
 
+template <typename T, u32 t_cap>
+u32 cap(sbuff<T, t_cap> *buffer) { return t_cap; }
+template <typename T, u32 t_cap>
+T* begin(sbuff<T, t_cap> *buffer) { return buffer->buffer; }
+template <typename T, u32 t_cap>
+T* end(sbuff<T, t_cap> *buffer) { return buffer->buffer + t_cap; }
 
 template <typename T, u32 t_cap>
-void sbuff_print(Static_Buffer<T, t_cap> *self, const char* item_fmt) {
-    buff_print(self->buffer, t_cap, item_fmt);
+void print(Static_Buffer<T, t_cap> *self, const char* item_fmt) {
+    print(self->buffer, t_cap, item_fmt);
 }
-
 
 
 template <typename T>
 struct Dynamic_Buffer {
     T* buffer;
     u32 cap; // in items
-    T* begin() { return buffer; }
-    T* end() { return buffer + cap; }
 
     void init(u32 init_cap = 0) { 
         cap = init_cap; 
-        buffer = m::alloc<T>(init_cap); 
+        buffer = m_alloc<T>(init_cap); 
     }
     void shut() { free(buffer); cap = 0; }
 
@@ -100,14 +99,27 @@ using dbuffd = Dynamic_Buffer<f64>;
 using dbuffb = Dynamic_Buffer<bool>;
 
 
+template <typename T>
+u32 cap(dbuff<T> *buffer) { return buffer->cap; }
+template <typename T>
+T* begin(dbuff<T> *buffer) { return buffer->buffer; }
+template <typename T>
+T* end(dbuff<T> *buffer) { return buffer->buffer + buffer->cap; }
+
+template <typename T, u32 t_cap>
+Dynamic_Buffer<T> to_dbuff(sbuff<T, t_cap> *buffer) {
+    return { buffer->buffer, t_cap };
+}
+
+
 // methods
 template <typename T>
-void dbuff_dresize(Dynamic_Buffer<T>* self, u32 new_capacity) {
-    buff_dresize(&self->buffer, &self->cap, new_capacity);
+void dresize(Dynamic_Buffer<T>* self, u32 new_capacity) {
+    dresize(&self->buffer, &self->cap, new_capacity);
 }
 
 template <typename T>
-T dbuff_sum(Dynamic_Buffer<T> self) {
+T sum(Dynamic_Buffer<T> self) {
     T out_sum = 0;
     T* endp = self.buffer + self.cap;
     for (T* p = self.buffer; p < endp; p++) {
@@ -117,18 +129,19 @@ T dbuff_sum(Dynamic_Buffer<T> self) {
 }
 
 template <typename T>
-T dbuff_sum_lmd(Dynamic_Buffer<T> self, T& (*access_lmd)(T*)) {
+T sum_lmd(dbuff<T> buffer, T& (*access_lmd)(T*)) {
     T out_sum = 0;
-    T* endp = self.buffer + self.cap;
-    for (T* p = self.buffer; p < endp; p++) {
+    T* endp = end(&buffer);
+    for (T* p = begin(&buffer); p < endp; p++) {
         out_sum += access_lmd(p);
     }
     return out_sum;
 }
 
+
 template <typename T>
-void dbuff_print(Dynamic_Buffer<T> self, const char* item_fmt) {
-    buff_print(self->buffer, self->cap, item_fmt);
+void print(Dynamic_Buffer<T> self, const char* item_fmt) {
+    print(self->buffer, self->cap, item_fmt);
 }
 
 template <typename T, u32 t_dim_count>
@@ -143,15 +156,7 @@ struct Dynamic_Buffer_N {
         for (u32 it : caps) {
             total_cap *= it;
         }
-        buffer = m::alloc<T>(total_cap);
-    }
-
-    u32 total_cap() {
-        u32 total_cap = 1;
-        for (u32 it : caps) {
-            total_cap *= it;
-        }
-        return total_cap;
+        buffer = m_alloc<T>(total_cap);
     }
 
     T& get(sbuffu<t_dim_count> indexes) {
@@ -164,6 +169,17 @@ struct Dynamic_Buffer_N {
     }
 };
 
+template <typename T, u32 t_dim_count>
+u32 total_cap(Dynamic_Buffer_N<T, t_dim_count> *buffer) {
+    u32 total_cap = 1;
+    for (u32 it : buffer->caps) {
+        total_cap *= it;
+    }
+    return total_cap;
+}
+
+
+
 template <typename T>
 struct DynamicBuffer2 {
     T* buffer;
@@ -173,42 +189,24 @@ struct DynamicBuffer2 {
     void init(u32 init_y_capacity, u32 init_x_capacity) {
         y_cap = init_y_capacity;
         x_cap = init_x_capacity;
-        buffer = m::alloc<T>(y_cap* x_cap);
+        buffer = m_alloc<T>(y_cap* x_cap);
     }
     void init_const(u32 init_y_capacity, u32 init_x_capacity, T value) {
         y_cap= init_y_capacity;
         x_cap= init_x_capacity;
-        buffer = m::alloc<T>(y_cap * x_cap);
-        T* endp = buffer + total_cap();
+        buffer = m_alloc<T>(y_cap * x_cap);
+        T* endp = buffer + y_cap * x_cap;
         for (T* p = buffer; p < endp; p++) {
             *p = value;
         }
     }
 
-
     void shut() {
         free(buffer);
     }
 
-    u32 total_cap() {
-        return y_cap* x_cap;
-    }
-
     T& get(u32 y_index, u32 x_index) {
         return buffer[x_cap* y_index + x_index];
-    }
-
-
-    // Functions
-
-    static void print(DynamicBuffer2<T> *self, const char* item_fmt, const char* row_delim="\n") {
-        u32 len = self->total_capacity();
-        for (u32 i = 0; i < len; i++) {
-            printf(item_fmt, self->buffer[i]);
-
-            if ((i % self->x_cap) == self->x_cap- 1)
-                printf(row_delim);
-        }
     }
 
 };
@@ -224,8 +222,26 @@ using dbuff2b = DynamicBuffer2<bool>;
 
 
 template<typename T>
-void dbuff2_scan(DynamicBuffer2<T> *self, const char* item_fmt) {
-    buff_scan(self->buffer, self->total_capacity(), item_fmt);
+u32 total_cap(dbuff2<T> *buffer) {
+    return buffer->y_cap * buffer->x_cap;
+}
+
+
+template<typename T>
+void scan(DynamicBuffer2<T> *self, const char* item_fmt) {
+    scan(self->buffer, self->total_capacity(), item_fmt);
+}
+
+
+template<typename T>
+void print(DynamicBuffer2<T> *self, const char* item_fmt, const char* row_delim="\n") {
+    u32 len = self->total_capacity();
+    for (u32 i = 0; i < len; i++) {
+        printf(item_fmt, self->buffer[i]);
+
+        if ((i % self->x_cap) == self->x_cap- 1)
+            printf(row_delim);
+    }
 }
 //namespace mdbuffer {
 //template <typename T>
@@ -250,5 +266,7 @@ void dbuff2_scan(DynamicBuffer2<T> *self, const char* item_fmt) {
 
     
 //};
+
+
 
 }

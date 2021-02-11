@@ -96,27 +96,27 @@ using sarrd = Static_Array<f64, t_cap>;
 
 
 template <typename T, u32 t_cap>
-void sarr_push(sarr<T, t_cap> *self, T item) {
+void push(sarr<T, t_cap> *self, T item) {
     arr_push(self->buffer, &self->len, item);
 }
 
 template <typename T, u32 t_cap>
-T sarr_pop(sarr<T, t_cap> *self) {
+T pop(sarr<T, t_cap> *self) {
     return arr_pop(self->buffer, &self->len);
 }
 
 template <typename T, u32 t_cap>
-void sarr_add(sarr<T, t_cap> *self, T item, u32 index) {
+void add(sarr<T, t_cap> *self, T item, u32 index) {
     arr_add(self->buffer, &self->len, item, index);
 }
 
 template <typename T, u32 t_cap>
-void sarr_remove(sarr<T, t_cap> *self, u32 index) {
+void remove(sarr<T, t_cap> *self, u32 index) {
     arr_remove(self->buffer, &self->len, index);
 }
 
 template <typename T, u32 t_cap>
-void sarr_print(sarr<T, t_cap> *self, const char* item_fmt) {
+void print(sarr<T, t_cap> *self, const char* item_fmt) {
     buff_print(self->buffer, self->len, item_fmt);
 }
 
@@ -134,14 +134,14 @@ struct Dynamic_Array {
     void init(u32 init_capacity=0) { 
         cap = init_capacity; 
         len = 0; 
-        buffer = m::alloc<T>(init_capacity); 
+        buffer = m_alloc<T>(init_capacity); 
     }
 
     template <u32 t_arg_count>
     void init_range(u32 init_capacity, sbuff<T, t_arg_count> args) {
         cap = init_capacity;
         len = t_arg_count;
-        buffer = m::alloc<T>(init_capacity);
+        buffer = m_alloc<T>(init_capacity);
         memcpy(buffer, args.buffer, t_arg_count * sizeof(T));
     }
 
@@ -167,38 +167,40 @@ using darri = Dynamic_Array<i32>;
 using darrf = Dynamic_Array<f32>;
 using darrd = Dynamic_Array<f64>;
 
+//darr methods
+
 template <typename T>
-void darr_push(darr<T> *self, T item) {
+void push(darr<T> *self, T item) {
     arr_push(self->buffer, &self->len, item);
 }
 
 template <typename T>
-void darr_dpush(darr<T> *self, T item) {
+void dpush(darr<T> *self, T item) {
     arr_dpush(&self->buffer, &self->len, &self->cap, item);
 }
 
 template <typename T>
-T darr_pop(darr<T> *self) {
+T pop(darr<T> *self) {
     return arr_pop(self->buffer, &self->len);
 }
 
 template <typename T>
-void darr_add(darr<T> *self, T item, u32 index) {
+void add(darr<T> *self, T item, u32 index) {
     arr_add(self->buffer, &self->len, item, index);
 }
 
 template <typename T>
-void darr_remove(darr<T> *self, u32 index) {
+void remove(darr<T> *self, u32 index) {
     arr_remove(self->buffer, &self->len, index);
 }
 
 template <typename T>
-void darr_print(darr<T> *self, const char* item_fmt) {
+void print(darr<T> *self, const char* item_fmt) {
     buff_print(self->buffer, self->len, item_fmt);
 }
 
 template <typename T, u32 t_items_count>
-void darr_dpush_range(darr<T> *self, sbuff<T, t_items_count>&& items) {
+void dpush_range(darr<T> *self, sbuff<T, t_items_count>&& items) {
     if (self->len + t_items_count >= self->cap) {
         dresize( &self->buffer, &self->cap, max(t_items_count, 2 * (self->cap)) );
     }

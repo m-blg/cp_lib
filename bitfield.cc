@@ -67,31 +67,31 @@ template <u32 t_bit_count>
 using sbitfld = Static_Bit_Field<t_bit_count>;
 
 template <u32 t_bit_count>
-bool sbitfld_get_bit(sbitfld<t_bit_count> self, u32 bit_index) {
+bool get_bit(sbitfld<t_bit_count> self, u32 bit_index) {
     assert(("Bit index out of range", bit_index < t_bit_count));
     return bitfld_get_bit(self->buffer, bit_index);
 }
 
 template <u32 t_bit_count>
-void sbitfld_set_bit_high(sbitfld<t_bit_count> self, u32 bit_index) {
+void set_bit_high(sbitfld<t_bit_count> self, u32 bit_index) {
     assert(("Bit index out of range", bit_index < t_bit_count));
     return bitfld_set_bit_high(self->buffer, bit_index);
 }
 
 template <u32 t_bit_count>
-void sbitfld_set_bit_low(sbitfld<t_bit_count> self, u32 bit_index) {
+void set_bit_low(sbitfld<t_bit_count> self, u32 bit_index) {
     assert(("Bit index out of range", bit_index < t_bit_count));
     return bitfld_set_bit_low(self->buffer, bit_index);
 }
 
 template <u32 t_bit_count>
-void sbitfld_flip_bit(sbitfld<t_bit_count> self, u32 bit_index) {
+void flip_bit(sbitfld<t_bit_count> self, u32 bit_index) {
     assert(("Bit index out of range", bit_index < t_bit_count));
     return bitfld_flip_bit(self->buffer, bit_index);
 }
 
 template <u32 t_bit_count>
-void sbitfld_set_bit(sbitfld<t_bit_count> self, u32 bit_index, bool value) {
+void set_bit(sbitfld<t_bit_count> self, u32 bit_index, bool value) {
     assert(("Bit index out of range", bit_index < t_bit_count));
     return bitfld_set_bit(self->buffer, bit_index, value);
 }
@@ -131,41 +131,41 @@ struct Dynamic_Bit_Field {
 
 using dbitfld = Dynamic_Bit_Field;
 
-bool dbitfld_get_bit(dbitfld self, u32 bit_index) {
+bool get_bit(dbitfld self, u32 bit_index) {
     //assert(("Bit index out of range", bit_index < bit_count));
     return bitfld_get_bit(self.buffer, bit_index);
 }
 
-void dbitfld_set_bit_high(dbitfld self, u32 bit_index) {
+void set_bit_high(dbitfld self, u32 bit_index) {
     //assert(("Bit index out of range", bit_index < bit_count));
     return bitfld_set_bit_high(self.buffer, bit_index);
 }
 
-void dbitfld_set_bit_low(dbitfld self, u32 bit_index) {
+void set_bit_low(dbitfld self, u32 bit_index) {
     //assert(("Bit index out of range", bit_index < bit_count));
     return bitfld_set_bit_low(self.buffer, bit_index);
 }
 
-void dbitfld_flip_bit(dbitfld self, u32 bit_index) {
+void flip_bit(dbitfld self, u32 bit_index) {
     //assert(("Bit index out of range", bit_index < bit_count));
     return bitfld_flip_bit(self.buffer, bit_index);
 }
 
-void dbitfld_set_bit(dbitfld self, u32 bit_index, bool value) {
+void set_bit(dbitfld self, u32 bit_index, bool value) {
     //assert(("Bit index out of range", bit_index < bit_count));
     return bitfld_set_bit(self.buffer, bit_index, value);
 }
 
-void dbitfld_dpush_bit(dbitfld *self, bool value) {
+void dpush_bit(dbitfld *self, bool value) {
     u32 len = (self->bit_count + 1u) / 8u + (u32)((self->bit_count + 1u) % 8u > 0);
     if (len >= self->capacity) {
-        buff_dresize( &self->buffer, &self->capacity, max(1u, 2u * ((*self).capacity)) );
+        dresize( &self->buffer, &self->capacity, max(1u, 2u * ((*self).capacity)) );
     }
-    dbitfld_set_bit(*self, self->bit_count, value);
+    set_bit(*self, self->bit_count, value);
     self->bit_count++;
 }
 
-void dbitfld_print_bits(dbitfld self) {
+void print_bits(dbitfld self) {
     bitfld_print_bits(self.buffer, self.bit_count);
 }
 
