@@ -226,6 +226,16 @@ u32 total_cap(dbuff2<T> *buffer) {
     return buffer->y_cap * buffer->x_cap;
 }
 
+template<typename T>
+T* begin(dbuff2<T> *buffer) {
+    return buffer->buffer;
+}
+
+template<typename T>
+T* end(dbuff2<T> *buffer) {
+    return buffer->buffer + total_cap(buffer);
+}
+
 
 template<typename T>
 void scan(DynamicBuffer2<T> *self, const char* item_fmt) {
