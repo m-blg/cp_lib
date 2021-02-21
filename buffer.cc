@@ -38,7 +38,7 @@ struct Static_Buffer {
     T buffer[t_cap];
 
     T& operator[](u32 index) {
-        assert(("Index out of range", 0 <= index < t_cap));
+        assert(("Index out of range", index < t_cap));
         return buffer[index];
     }
 
@@ -83,7 +83,7 @@ struct Dynamic_Buffer {
     void shut() { free(buffer); cap = 0; }
 
     T& operator[](u32 index) {
-        assert(("Index out of range", 0 <= index < cap));
+        assert(("Index out of range", index < cap));
         return buffer[index];
     }
 
@@ -207,6 +207,13 @@ struct DynamicBuffer2 {
 
     T& get(u32 y_index, u32 x_index) {
         return buffer[x_cap* y_index + x_index];
+    }
+    bool sget(T* *out_p, u32 y_index, u32 x_index) {
+        if (y_index < y_cap && x_index < x_cap){
+            *out_p = &buffer[x_cap* y_index + x_index];
+            return true;
+        }
+        return false;
     }
 
 };

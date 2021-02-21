@@ -251,18 +251,19 @@ Vector3<T> cross(Vector3<T> first, Vector3<T> second) {
 
 template<typename T>
 union Vector4 {
-    struct {T w, x, y, z;};
+    struct {T x, y, z, w;};
     struct {T a, r, g, b;};
+    struct {T u, v;};
     sbuff<T, 4> buffer;
     
     
     Vector4() = default;
-    Vector4(T _w, T _x, T _y, T _z) { w = _w; x = _x; y = _y; z = _z; }
+    Vector4(T _x, T _y, T _z, T _w) { w = _w; x = _x; y = _y; z = _z; }
 
 
     template <typename S>
     operator Vector4<S>() {
-        return {(S) w, (S)x, (S)y, (S)z};
+        return { (S)x, (S)y, (S)z, (S) w };
     }
     
 
@@ -288,85 +289,85 @@ using vec4d = Vector4<f64>;
 
 template <typename T>
 vec4<T> operator+(vec4<T> first, vec4<T> second) {
-    return { first.w + second.w, first.x + second.x, first.y + second.y, first.z + second.z };
+    return { first.x + second.x, first.y + second.y, first.z + second.z, first.w + second.w };
 }
 template <typename T>
 vec4<T> operator-(vec4<T> first, vec4<T> second) {
-    return { first.w - second.w, first.x - second.x, first.y - second.y, first.z - second.z };
+    return { first.x - second.x, first.y - second.y, first.z - second.z, first.w - second.w };
 }
 
 template <typename T>
 vec4<T> operator*(vec4<T> first, T second) {
-    return { first.w * second, first.x * second, first.y * second, first.z * second };
+    return { first.x * second, first.y * second, first.z * second, first.w * second };
 }
 template <typename T>
 vec4<T> operator*(T first, vec4<T> second) {
-    return { second.w * first, second.x * first, second.y * first, second.z * first };
+    return { second.x * first, second.y * first, second.z * first, second.w * first };
 }
 template <typename T>
 vec4<T> operator/(vec4<T> first, T second) {
-    return { first.w / second, first.x / second, first.y / second, first.z / second };
+    return { first.x / second, first.y / second, first.z / second, first.w / second };
 }
 template <typename T>
 vec4<T> operator/(T first, vec4<T> second) {
-    return { second.w / first, second.x / first, second.y / first, second.z / first };
+    return { second.x / first, second.y / first, second.z / first, second.w / first };
 }
 
 template <typename T>
 vec4<T>& operator+=(vec4<T>& first, vec4<T> second) {
-    first.w += second.w;
     first.x += second.x;
     first.y += second.y;
     first.z += second.z;
+    first.w += second.w;
     return first;
 }
 template <typename T>
 vec4<T>& operator-=(vec4<T>& first, vec4<T> second) {
-    first.w -= second.w;
     first.x -= second.x;
     first.y -= second.y;
     first.z -= second.z;
+    first.w -= second.w;
     return first;
 }
 template <typename T>
 vec4<T>& operator*=(vec4<T>& first, T second) {
-    first.w *= second;
     first.x *= second;
     first.y *= second;
     first.z *= second;
+    first.w *= second;
     return first;
 }
 template <typename T>
 vec4<T>& operator/=(vec4<T>& first, T second) {
-    first.w /= second;
     first.x /= second;
     first.y /= second;
     first.z /= second;
+    first.w /= second;
     return first;
 }
 template <typename T>
 bool operator==(vec4<T> first, vec4<T> second) {
-    return first.w == second.w && first.x == second.x && first.y == second.y && first.z == second.z;
+    return first.x == second.x && first.y == second.y && first.z == second.z && first.w == second.w;
 }
 template <typename T>
 bool operator!=(vec4<T> first, vec4<T> second) {
-    return first.w != second.w || first.x != second.x || first.y != second.y || first.z != second.z;
+    return first.x != second.x || first.y != second.y || first.z != second.z || first.w != second.w;
 }
 
 template <typename T>
 T magnitude(vec4<T> self) {
-    return sqrt(self.w * self.w + self.x * self.x + self.y * self.y + self.z * self.z);
+    return sqrt(self.x * self.x + self.y * self.y + self.z * self.z + self.w * self.w);
 }
 
 template <typename T>
 vec4<T> normalized(vec4<T> self) {
     T mag = magnitude(self);
-    return { self.w / mag, self.x / mag, self.y / mag, self.z / mag };
+    return { self.x / mag, self.y / mag, self.z / mag, self.w / mag};
 }
 
 template <typename T>
 T dot(vec4<T> first, vec4<T> second) {
-    return first.w * second.w + first.x * second.x + first.y * second.y + first.z * second.z;
+    return first.x * second.x + first.y * second.y + first.z * second.z + first.w * second.w;
 }
 
 }
