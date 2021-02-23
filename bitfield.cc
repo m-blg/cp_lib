@@ -60,7 +60,7 @@ struct Static_Bit_Field {
 
     constexpr u32 bit_count() { return t_bit_count; }
     // in bytes
-    constexpr u32 capacity() { return bitfld_t_byte_count(t_bit_count); }
+    constexpr u32 cap() { return bitfld_t_byte_count(t_bit_count); }
 };
 
 template <u32 t_bit_count>
@@ -99,18 +99,18 @@ void set_bit(sbitfld<t_bit_count> self, u32 bit_index, bool value) {
 
 struct Dynamic_Bit_Field {
     u8* buffer;
-    u32 capacity; // in bytes
+    u32 cap; // in bytes
     u32 bit_count;
 
     void init_bits(u32 init_bit_count=0) { 
-        capacity = bitfld_t_byte_count(init_bit_count); 
+        cap = bitfld_t_byte_count(init_bit_count); 
         bit_count = init_bit_count;
-        buffer = m::alloc<u8>(capacity); 
+        buffer = m_alloc<u8>(cap); 
     }
-    void init_bytes(u32 initial_capacity=0) { 
-        capacity = initial_capacity; 
-        bit_count = initial_capacity * 8u;
-        buffer = m::alloc<u8>(initial_capacity); 
+    void init_bytes(u32 initial_cap=0) { 
+        cap = initial_cap; 
+        bit_count = initial_cap * 8u;
+        buffer = m_alloc<u8>(initial_cap); 
     }
     void shut() { free(buffer); }
 
@@ -158,8 +158,8 @@ void set_bit(dbitfld self, u32 bit_index, bool value) {
 
 void dpush_bit(dbitfld *self, bool value) {
     u32 len = (self->bit_count + 1u) / 8u + (u32)((self->bit_count + 1u) % 8u > 0);
-    if (len >= self->capacity) {
-        dresize( &self->buffer, &self->capacity, max(1u, 2u * ((*self).capacity)) );
+    if (len >= self->cap) {
+        dresize( &self->buffer, &self->cap, max(1u, 2u * ((*self).cap)) );
     }
     set_bit(*self, self->bit_count, value);
     self->bit_count++;
