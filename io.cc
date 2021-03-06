@@ -1,21 +1,73 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
+
+#include "buffer.cc"
+#include "string.cc"
+
 
 namespace cp {
 
-template <typename R, typename ... Types> constexpr size_t t_get_arg_count( R(*f)(Types ...)) {
-   return sizeof...(Types);
+
+inline void print(u32 value, const char* end = "") {
+    printf("%u%s", value, end);
+}
+inline void print(u64 value, const char* end = "") {
+    printf("%lu%s", value, end);
+}
+inline void print(i32 value, const char* end = "") {
+    printf("%i%s", value, end);
+}
+inline void print(i64 value, const char* end = "") {
+    printf("%li%s", value, end);
+}
+inline void print(f32 value, const char* end = "") {
+    printf("%f%s", value, end);
+}
+inline void print(f64 value, const char* end = "") {
+    printf("%lf%s", value, end);
+}
+
+
+template <typename... Args>
+void print(Args... args) {
+    print(args...);
+}
+
+
+template <typename t_c_arg, typename... t_rest_args>
+void print(t_c_arg c_arg, t_rest_args... rest_args) {
+    print(c_arg);
+    printf(" ");
+    print(rest_args...);
+}
+
+
+
+i64 file_size(FILE* file) {
+    i64 init_pos = ftell(file);
+    fseek(file, 0, SEEK_END);
+    i64 size = ftell(file);
+    fseek(file, init_pos, SEEK_SET);
+    return size;
 }
 
 template <typename T>
-constexpr char* 
+void read_array(dbuff<T> buffer, FILE* file) {
+    fread(buffer.buffer, sizeof(T), cap(&buffer), file);
+}
 
-template <typename T>
-void input(T* n1...) {
-    va_list args;
-    va_start(args, n1);
+void read_whole(dstr *out_str, const char* file_name) {
 
+    FILE* file = fopen(file_name, "r");
+    if (file == null) {
+        printf("No shader file");
+    }
+
+    i64 fsize = file_size(file);
+    out_str->init(fsize);
+    out_str->len = fsize;
+    fread(out_str->buffer, sizeof(u8), out_str->cap, file);
+    fclose(file);
 }
 
 } // namespace cp
