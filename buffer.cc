@@ -280,6 +280,77 @@ void print(Dynamic_Buffer2<T> *self, const char* item_fmt, const char* row_delim
             printf(row_delim);
     }
 }
+
+
+template <typename T>
+auto& _get(u32 index, void* buffer) {
+    if (index != 0) {
+        assert(("Index out of bounds", false));
+    }
+    return *(T*)buffer;
+}
+
+template <typename T, typename... Gargs>
+auto& _get(u32 index, void* buffer) {
+    if (index == 0) {
+        return *(T*)buffer;
+    }
+
+    return _get<Gargs...>(index - 1, (u8*)buffer + sizeof(T));
+}
+
+template <typename... Args>
+struct Tupple {
+private:
+
+public:
+    void* buffer;
+    
+    auto& get(u32 index) {
+        return _get<Args...>(index, buffer);
+    }
+};
+
+template <typename T, typename... Args>
+struct Tupple<T, Args...> {
+private:
+    Tupple<Args...> next;
+
+    auto& _get(u32 index, void* buffer) {
+        if (index == 0) {
+            return *(T*)buffer;
+        }
+
+        return next._get(index - 1, (u8*)buffer + sizeof(T));
+    }
+
+};
+
+template <>
+struct Tupple<> {
+    auto& _get(u32 index, void* buffer) {
+        assert(("Index out of bounds", false));
+        return *(u8*)buffer;
+    }
+};
+
+
+struct Dynamic_Element_Size_Buffer {
+    dbuff<u8> buffer;
+    u32 stride;
+
+    void init(u32 init_cap) { buffer.init(init_cap); }
+    void shut() { buffer.shut(); }
+
+    u8& operator[](u32 index) {
+        return *(buffer.buffer + stride * index);
+    }
+};
+
+using desbuff = Dynamic_Element_Size_Buffer;
+
+
+
 //namespace mdbuffer {
 //template <typename T>
 //T& get_item(T* buffer, u32 dim_count, u32 dim_capacity) {

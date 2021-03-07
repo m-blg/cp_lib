@@ -8,5 +8,5 @@ int main() {
     print(5.2, "\n");
     print(6.2f, "\n");
 
-    print(3, 5, 4);
+    print(3, 'd', "Text");
 }

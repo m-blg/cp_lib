@@ -26,11 +26,14 @@ inline void print(f32 value, const char* end = "") {
 inline void print(f64 value, const char* end = "") {
     printf("%lf%s", value, end);
 }
-
-
-template <typename... Args>
-void print(Args... args) {
-    print(args...);
+inline void print(char value, const char* end = "") {
+    printf("%c%s", value, end);
+}
+inline void print(bool value, const char* end = "") {
+    printf("%i%s", value, end);
+}
+inline void print(const char* value, const char* end = "") {
+    printf("%s%s", value, end);
 }
 
 
@@ -39,6 +42,11 @@ void print(t_c_arg c_arg, t_rest_args... rest_args) {
     print(c_arg);
     printf(" ");
     print(rest_args...);
+}
+
+template <typename... Args>
+void print(Args... args) {
+    print(args...);
 }
 
 
