@@ -44,10 +44,10 @@ void print(t_c_arg c_arg, t_rest_args... rest_args) {
     print(rest_args...);
 }
 
-template <typename... Args>
-void print(Args... args) {
-    print(args...);
-}
+//template <typename... Args>
+//void print(Args... args) {
+    //print(args...);
+//}
 
 
 

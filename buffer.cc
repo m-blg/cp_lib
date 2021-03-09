@@ -32,17 +32,53 @@ void print(T* buffer, u32 len, const char* item_fmt) {
     }
 }
 
-template <typename... Args>
-void cpy_values(void* buffer, Args... args) {
-    cpy_values(buffer, args...);
+template <typename t_first>
+void cpy_values(void* buffer, t_first first_arg) {
+    *(t_first*)buffer = first_arg;
 }
-
 
 template <typename t_first, typename... Args>
 void cpy_values(void* buffer, t_first first_arg, Args... args) {
     *(t_first*)buffer = first_arg;
     cpy_values((u8*)buffer + sizeof(t_first), args...);
 }
+
+template<typename T, typename... Args>
+struct Memory_Layout {};
+
+
+template <u32 index, typename t_first>
+constexpr auto& get_value(Memory_Layout<t_first> *buffer) {
+    if constexpr(index != 0) {
+        assert(("Index out of bounds", false));
+    }
+    return *(t_first*)buffer;
+}
+
+template <u32 index, typename t_first, typename... Args>
+constexpr auto& get_value(Memory_Layout<t_first, Args...> *buffer) {
+    if constexpr(index == 0) {
+        return *(t_first*)buffer;
+    } else 
+        return get_value<index-1>((Memory_Layout<Args...>*)(u8*)buffer + sizeof(t_first));
+}
+
+template <typename T, typename... Ts>
+struct Tupple {
+    T first;
+    Tupple<Ts...> next;
+
+    template <u32 index>
+    constexpr auto& get() {
+        return get_value<index>((Memory_Layout<T, Ts...>*)this);
+    }
+};
+
+template <typename T>
+struct Tupple<T> {
+    T first;
+};
+
 
 // wrapper arround T[t_cap], t_cap - buffer capa in items
 template <typename T, u32 t_cap>
@@ -299,40 +335,7 @@ auto& _get(u32 index, void* buffer) {
     return _get<Gargs...>(index - 1, (u8*)buffer + sizeof(T));
 }
 
-template <typename... Args>
-struct Tupple {
-private:
 
-public:
-    void* buffer;
-    
-    auto& get(u32 index) {
-        return _get<Args...>(index, buffer);
-    }
-};
-
-template <typename T, typename... Args>
-struct Tupple<T, Args...> {
-private:
-    Tupple<Args...> next;
-
-    auto& _get(u32 index, void* buffer) {
-        if (index == 0) {
-            return *(T*)buffer;
-        }
-
-        return next._get(index - 1, (u8*)buffer + sizeof(T));
-    }
-
-};
-
-template <>
-struct Tupple<> {
-    auto& _get(u32 index, void* buffer) {
-        assert(("Index out of bounds", false));
-        return *(u8*)buffer;
-    }
-};
 
 
 struct Dynamic_Element_Size_Buffer {
