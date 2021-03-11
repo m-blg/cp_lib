@@ -50,16 +50,16 @@ T& get_value(Memory_Layout<t_first, Args...> ml, void* buffer, u32 index) {
 
 
 template <typename T, typename... Ts>
-struct Tupple {
+struct Tuple {
     T first;
-    Tupple<Ts...> next;
+    Tuple<Ts...> next;
     
     template <u32 index, typename... T2s>
-    constexpr static auto& get(Tupple<T2s...> *t) {
+    constexpr static auto& get(Tuple<T2s...> *t) {
         if constexpr(index == 0) {
             return t->first;
         } else 
-            return Tupple<T2s...>::get<index - 1>(&t->next);
+            return Tuple<T2s...>::get<index - 1>(&t->next);
     }
 
     template <u32 index>
@@ -69,11 +69,11 @@ struct Tupple {
 };
 
 template <typename T>
-struct Tupple<T> {
+struct Tuple<T> {
     T first;
 
     template <u32 index, typename... T2s>
-    constexpr static auto& get(Tupple<T2s...> *t) {
+    constexpr static auto& get(Tuple<T2s...> *t) {
         if constexpr(index != 0) {
             assert(("Index out of bounds", false));
         } 

@@ -7,6 +7,7 @@
 #include <string.h>
 #include <cassert>
 
+
 namespace cp {
 
 template <typename T>
@@ -64,9 +65,9 @@ constexpr auto& get_value(Memory_Layout<t_first, Args...> *buffer) {
 }
 
 template <typename T, typename... Ts>
-struct Tupple {
+struct Tuple {
     T first;
-    Tupple<Ts...> next;
+    Tuple<Ts...> next;
 
     template <u32 index>
     constexpr auto& get() {
@@ -75,7 +76,7 @@ struct Tupple {
 };
 
 template <typename T>
-struct Tupple<T> {
+struct Tuple<T> {
     T first;
 };
 

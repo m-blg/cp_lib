@@ -1,9 +1,10 @@
 #include "../buffer.cc"
+#include "../vector.cc"
 
 using namespace cp;
 
 // void test1() {
-//         // Tupple<i32, f32, bool> t;
+//         // Tuple<i32, f32, bool> t;
 //     // t.get<0>();
 //     u8 b[100];
 //     u8* p = b;
@@ -62,7 +63,7 @@ void test3() {
     printf("%c\n", *(char*)p); p += sizeof(char);
 
     p = b;  
-    auto t = (Tupple<i32, f32, char>*)p;
+    auto t = (Tuple<i32, f32, char>*)p;
     t->get<0>() = 6.1;
     t->get<1>() = 5.4;
     t->get<2>() = 'c'; 
@@ -79,4 +80,6 @@ void test3() {
 
 int main() {
     test3();
+    Tuple<i32, f32> t = {1, 3.5f};
+    Tuple<vec2i, vec2f> t2 = { {1, 3}, {{3, 5.5}} };
 }
