@@ -22,10 +22,10 @@ inline T* m_ralloc(T* ptr, u32 count) {
     return (T*)realloc(ptr, count * sizeof(T));
 }
 
-template <typename T>
-inline T* m_salloc(u32 count) {
-    return (T*)alloca(count * sizeof(T));
-}
+//template <typename T>
+//inline T* m_salloc(u32 count) {
+    //return (T*)alloca(count * sizeof(T));
+//}
 
 
 #define alloci(x) alloc<int>((x))
