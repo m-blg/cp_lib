@@ -80,6 +80,15 @@ struct Tuple<T> {
     T first;
 };
 
+template <typename T, template <typename> class t_buff>
+inline u32 cap(t_buff<T> *buffer) { return buffer->cap; }
+template <typename T, template <typename> class t_buff>
+inline u32 size(t_buff<T> *buffer) { return sizeof(T) * buffer->cap; }
+template <typename T, template <typename> class t_buff>
+inline T* begin(t_buff<T> *buffer) { return buffer->buffer; }
+template <typename T, template <typename> class t_buff>
+inline T* end(t_buff<T> *buffer) { return buffer->buffer + buffer->cap; }
+
 
 // wrapper arround T[t_cap], t_cap - buffer capa in items
 template <typename T, u32 t_cap>
@@ -110,6 +119,8 @@ using sbuffb = Static_Buffer<bool, t_cap>;
 template <typename T, u32 t_cap>
 u32 cap(sbuff<T, t_cap> *buffer) { return t_cap; }
 template <typename T, u32 t_cap>
+u32 size(sbuff<T, t_cap> *buffer) { return sizeof(T) * t_cap; }
+template <typename T, u32 t_cap>
 T* begin(sbuff<T, t_cap> *buffer) { return buffer->buffer; }
 template <typename T, u32 t_cap>
 T* end(sbuff<T, t_cap> *buffer) { return buffer->buffer + t_cap; }
@@ -125,9 +136,9 @@ struct Dynamic_Buffer {
     T* buffer;
     u32 cap; // in items
 
-    void init(u32 init_cap = 0) { 
-        cap = init_cap; 
+    void init(u32 init_cap) { 
         buffer = m_alloc<T>(init_cap); 
+        cap = init_cap; 
     }
     void shut() { 
         free(buffer); 
@@ -152,11 +163,13 @@ using dbuffb = Dynamic_Buffer<bool>;
 
 
 template <typename T>
-u32 cap(dbuff<T> *buffer) { return buffer->cap; }
+inline u32 cap(dbuff<T> *buffer) { return buffer->cap; }
 template <typename T>
-T* begin(dbuff<T> *buffer) { return buffer->buffer; }
+inline u32 size(dbuff<T> *buffer) { return sizeof(T) * buffer->cap; }
 template <typename T>
-T* end(dbuff<T> *buffer) { return buffer->buffer + buffer->cap; }
+inline T* begin(dbuff<T> *buffer) { return buffer->buffer; }
+template <typename T>
+inline T* end(dbuff<T> *buffer) { return buffer->buffer + buffer->cap; }
 
 template <typename T, u32 t_cap>
 Dynamic_Buffer<T> to_dbuff(sbuff<T, t_cap> *buffer) {
@@ -353,7 +366,9 @@ struct Dynamic_Element_Size_Buffer {
 
 using desbuff = Dynamic_Element_Size_Buffer;
 
-
+inline u32 cap(desbuff *buffer) { return cap(&buffer->buffer); }
+inline u8* begin(desbuff *buffer) { return begin(&buffer->buffer); }
+inline u8* end(desbuff *buffer) { return end(&buffer->buffer); }
 
 //namespace mdbuffer {
 //template <typename T>

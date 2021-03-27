@@ -48,7 +48,7 @@ void arr_remove(T* buffer, u32 *len, u32 index) {
 template <typename T>
 void arr_dpush(T* *buffer, u32 *len, u32 *cap, T item) { 
     if (*len >= *cap) {
-        buff_dresize( buffer, cap, max(1u, 2 * (*cap)) );
+        dresize( buffer, cap, max(1u, 2 * (*cap)) );
     }
     (*buffer)[(*len)] = item;
     (*len)++;
@@ -75,7 +75,7 @@ struct Static_Array {
     }
     
     T& operator[](u32 index) {
-        assert(("Index out of range", 0 <= index < t_cap));
+        assert(("Index out of range", index < t_cap));
         return buffer[index];
     }
    
@@ -124,36 +124,37 @@ void print(sarr<T, t_cap> *self, const char* item_fmt) {
 
 template <typename T>
 struct Dynamic_Array {
-    T* buffer;
-    u32 cap; // max count of T
+    union {
+        struct {
+            T* buffer;
+            u32 cap;
+        };
+        dbuff<T> db;
+    };
     u32 len;
 
-    T* begin() { return buffer; }
-    T* end() { return buffer + len; } 
-
-    void init(u32 init_capacity=0) { 
-        cap = init_capacity; 
+    void init(u32 init_cap) { 
+        buffer = m_alloc<T>(init_cap); 
+        cap = init_cap; 
         len = 0; 
-        buffer = m_alloc<T>(init_capacity); 
     }
 
     template <u32 t_arg_count>
-    void init_range(u32 init_capacity, sbuff<T, t_arg_count> args) {
-        cap = init_capacity;
+    void init_range(u32 init_cap, sbuff<T, t_arg_count> args) {
+        buffer = m_alloc<T>(init_cap); 
+        cap = init_cap;
         len = t_arg_count;
-        buffer = m_alloc<T>(init_capacity);
-        memcpy(buffer, args.buffer, t_arg_count * sizeof(T));
+        memcpy(buffer->buffer, args.buffer, t_arg_count * sizeof(T));
     }
 
-    void shut() { free(buffer); }
-
-    bool is_empty() { return (len == 0); }
-
-    T& back() { return buffer[len-1]; }
+    void shut() { 
+        free(buffer); 
+        *this = {};
+    }
 
 
     T& operator[](u32 index) {
-        assert(("Index out of range", 0 <= index < cap));
+        assert(("Index out of range", index < cap));
         return buffer[index];
     }
 
@@ -166,6 +167,19 @@ using darru = Dynamic_Array<u32>;
 using darri = Dynamic_Array<i32>;
 using darrf = Dynamic_Array<f32>;
 using darrd = Dynamic_Array<f64>;
+
+
+template <typename T>
+inline T* end(darr<T> *self) { return self->buffer + self->len; }
+template <typename T>
+inline u32 len(darr<T> *self) { return self->len; }
+
+template <typename T>
+inline bool is_empty(darr<T> *self) { return (self->len == 0); }
+
+template <typename T>
+inline T& back(darr<T> *self) { return self->buffer[self->len-1]; }
+
 
 //darr methods
 

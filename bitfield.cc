@@ -10,7 +10,7 @@ namespace cp {
 
 
 
-constexpr u32 bitfld_t_byte_count(u32 t_bit_count) {
+constexpr u32 bitfld_byte_count(u32 t_bit_count) {
     u32 div = t_bit_count / 8u;
     u32 mod = t_bit_count % 8u;
     return (mod ? div + 1 : div);
@@ -56,11 +56,11 @@ inline void bitfld_print_bits(u8* buffer, u32 bit_count) {
 
 template <u32 t_bit_count>
 struct Static_Bit_Field {
-    u8 buffer[bitfld_t_byte_count(t_bit_count)];
+    u8 buffer[bitfld_byte_count(t_bit_count)];
 
     constexpr u32 bit_count() { return t_bit_count; }
     // in bytes
-    constexpr u32 cap() { return bitfld_t_byte_count(t_bit_count); }
+    constexpr u32 cap() { return bitfld_byte_count(t_bit_count); }
 };
 
 template <u32 t_bit_count>
@@ -103,14 +103,14 @@ struct Dynamic_Bit_Field {
     u32 bit_count;
 
     void init_bits(u32 init_bit_count=0) { 
-        cap = bitfld_t_byte_count(init_bit_count); 
+        cap = bitfld_byte_count(init_bit_count); 
         bit_count = init_bit_count;
         buffer = m_alloc<u8>(cap); 
     }
-    void init_bytes(u32 initial_cap=0) { 
-        cap = initial_cap; 
-        bit_count = initial_cap * 8u;
-        buffer = m_alloc<u8>(initial_cap); 
+    void init_bytes(u32 init_cap=0) { 
+        cap = init_cap; 
+        bit_count = init_cap * 8u;
+        buffer = m_alloc<u8>(init_cap); 
     }
     void shut() { free(buffer); }
 
@@ -130,6 +130,10 @@ struct Dynamic_Bit_Field {
 };
 
 using dbitfld = Dynamic_Bit_Field;
+
+inline u32 cap(dbitfld *buffer) { return buffer->cap; }
+inline u8* begin(dbitfld *buffer) { return buffer->buffer; }
+inline u8* end(dbitfld *buffer) { return buffer->buffer + buffer->cap; }
 
 bool get_bit(dbitfld self, u32 bit_index) {
     //assert(("Bit index out of range", bit_index < bit_count));

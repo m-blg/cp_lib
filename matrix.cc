@@ -3,6 +3,7 @@
 
 #include "mbgldef.h"
 #include "buffer.cc"
+#include "vector.cc"
 #include <math.h>
 
 namespace cp {
@@ -130,23 +131,23 @@ namespace cp {
             S c1, c2, c3, c4;
             S d1, d2, d3, d4;
         };
-        sbuff<S, 16> buffer;
+        sbuff<sbuff<S, 4>, 4> buffer;
 
-        Matrix4x4 operator+(Matrix4x4& other) {
+        Matrix4x4 operator+(Matrix4x4 other) {
             return { a1 + other.a1, a2 + other.a2, a3 + other.a3, a4 + other.a4,
                      b1 + other.b1, b2 + other.b2, b3 + other.b3, b4 + other.b4, 
                      c1 + other.c1, c2 + other.c2, c3 + other.c3, c4 + other.c4,
                      d1 + other.d1, d2 + other.d2, d3 + other.d3, d4 + other.d4 };
         }
 
-        Matrix4x4 operator-(Matrix4x4& other) {
+        Matrix4x4 operator-(Matrix4x4 other) {
             return { a1 - other.a1, a2 - other.a2, a3 - other.a3, a4 - other.a4,
                      b1 - other.b1, b2 - other.b2, b3 - other.b3, b4 - other.b4, 
                      c1 - other.c1, c2 - other.c2, c3 - other.c3, c4 - other.c4,
                      d1 - other.d1, d2 - other.d2, d3 - other.d3, d4 - other.d4 };
         }
 
-        Matrix4x4& operator+=(Matrix4x4& other) {
+        Matrix4x4& operator+=(Matrix4x4 other) {
             a1 += other.a1; a2 += other.a2; a3 += other.a3; a4 += other.a4;
             b1 += other.b1; b2 += other.b2; b3 += other.b3; b4 += other.b4;
             c1 += other.c1; c2 += other.c2; c3 += other.c3; c4 += other.c4;
@@ -154,7 +155,7 @@ namespace cp {
             return *this;
         }
  
-        Matrix4x4& operator-=(Matrix4x4& other) {
+        Matrix4x4& operator-=(Matrix4x4 other) {
             a1 -= other.a1; a2 -= other.a2; a3 -= other.a3; a4 -= other.a4;
             b1 -= other.b1; b2 -= other.b2; b3 -= other.b3; b4 -= other.b4;
             c1 -= other.c1; c2 -= other.c2; c3 -= other.c3; c4 -= other.c4;
@@ -162,7 +163,30 @@ namespace cp {
             return *this;
         }
 
-        bool operator==(Matrix4x4& other) {
+        Matrix4x4 operator*(Matrix4x4 other) {
+            Matrix4x4 ret;
+            for (u32 i = 0; i < 4; i++) {
+                for (u32 j = 0; j < 4; j++) {
+                    ret.buffer[i][j] = buffer[i][0] * other.buffer[0][j] + buffer[i][1] * other.buffer[1][j] +
+                        buffer[i][2] * other.buffer[2][j] + buffer[i][3] * other.buffer[3][j]; 
+                }
+            }
+            return ret;
+        }
+
+
+        vec4<S> operator*(vec4<S> other) {
+            vec4<S> ret;
+            for (u32 i = 0; i < 4; i++) {
+                for (u32 j = 0; j < 4; j++) {
+                    ret.buffer[i] = buffer[i][0] * other.buffer[0] + buffer[i][1] * other.buffer[1] +
+                        buffer[i][2] * other.buffer[2] + buffer[i][3] * other.buffer[3]; 
+                }
+            }
+            return ret;
+        }
+
+        bool operator==(Matrix4x4 other) {
             return { a1 == other.a1 && a2 == other.a2 && a3 == other.a3 && a4 == other.a4 &&
                      b1 == other.b1 && b2 == other.b2 && b3 == other.b3 && b4 == other.b4 && 
                      c1 == other.c1 && c2 == other.c2 && c3 == other.c3 && c4 == other.c4 &&
@@ -170,7 +194,7 @@ namespace cp {
 
         }
         
-        bool operator!=(Matrix4x4& other) {
+        bool operator!=(Matrix4x4 other) {
             return { a1 != other.a1 || a2 != other.a2 || a3 != other.a3 || a4 != other.a4 ||
                      b1 != other.b1 || b2 != other.b2 || b3 != other.b3 || b4 != other.b4 || 
                      c1 != other.c1 || c2 != other.c2 || c3 != other.c3 || c4 != other.c4 ||

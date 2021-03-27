@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -64,18 +66,20 @@ void read_array(dbuff<T> buffer, FILE* file) {
     fread(buffer.buffer, sizeof(T), cap(&buffer), file);
 }
 
-void read_whole(dstr *out_str, const char* file_name) {
+bool read_whole(dstr *out_str, const char* file_name) {
 
     FILE* file = fopen(file_name, "r");
     if (file == null) {
-        printf("No shader file");
+        printf("No file found");
+        return false;
     }
 
     i64 fsize = file_size(file);
     out_str->init(fsize);
     out_str->len = fsize;
-    fread(out_str->buffer, sizeof(u8), out_str->cap, file);
+    fread(begin(out_str), sizeof(u8), cap(out_str), file);
     fclose(file);
+    return true;
 }
 
 } // namespace cp
