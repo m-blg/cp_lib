@@ -34,9 +34,20 @@ void arr_add(T* buffer, u32 *len, T item, u32 index) { // add with value
 
 template <typename T>
 void arr_remove(T* buffer, u32 *len, u32 index) {
+    assert(len != 0);
     (*len)--;
     T* p_end = buffer + (*len);
     for (T* p = buffer + index; p < p_end; p++) {
+        *p = *(p + 1);
+    }
+}
+
+template <typename T>
+void arr_remove(T* buffer, u32 *len, T* it) {
+    assert(len != 0);
+    (*len)--;
+    T* p_end = buffer + (*len);
+    for (T* p = it; p < p_end; p++) {
         *p = *(p + 1);
     }
 }
@@ -207,6 +218,12 @@ template <typename T>
 void remove(darr<T> *self, u32 index) {
     arr_remove(self->buffer, &self->len, index);
 }
+
+template <typename T>
+void remove(darr<T> *self, T* it) {
+    arr_remove(self->buffer, &self->len, it);
+}
+
 
 template <typename T>
 void print(darr<T> *self, const char* item_fmt) {

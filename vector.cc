@@ -21,6 +21,10 @@ union Vector2 {
         return {(S)x, (S)y};
     }
 
+    T& operator[](u32 index) {
+        return buffer[index];
+    }
+
     // Functions
     static Vector2<T> zero() {
         return { 0, 0 };
@@ -136,11 +140,22 @@ union Vector3 {
     
     Vector3() = default;
     Vector3(T _x, T _y, T _z) { x = _x; y = _y; z = _z; }
+    Vector3(Vector2<T> _xy, T _z) { x = _xy.x; y = _xy.y; z = _z; }
+    Vector3(T _x, Vector2<T> _yz) { x = _x; y = _yz.y; z = _yz.z; }
 
 
     template <typename S>
     operator Vector3<S>() {
         return {(S)x, (S)y, (S)z};
+    }
+
+    template <typename S>
+    operator Vector2<S>() {
+        return {(S)x, (S)y};
+    }
+
+    T& operator[](u32 index) {
+        return buffer[index];
     }
     
 
@@ -252,20 +267,39 @@ Vector3<T> cross(Vector3<T> first, Vector3<T> second) {
 template<typename T>
 union Vector4 {
     struct {T x, y, z, w;};
-    struct {T a, r, g, b;};
+    struct {T r, g, b, a;};
     struct {T u, v;};
     sbuff<T, 4> buffer;
     
     
     Vector4() = default;
-    Vector4(T _x, T _y, T _z, T _w) { w = _w; x = _x; y = _y; z = _z; }
+    Vector4(T _x, T _y, T _z, T _w) { x = _x; y = _y; z = _z; w = _w; }
+    Vector4(Vector2<T> _xy, T _z, T _w) { x = _xy.x; y = _xy.y; z = _z; w = _w; }
+    Vector4(T _x, Vector2<T> _yz, T _w) { x = _x; y = _yz.y; z = _yz.z; w = _w; }
+    Vector4(T _x, T _y, Vector2<T> _zw) { x = _x; y = _y; z = _zw.z; w = _zw.w; }
+    Vector4(Vector2<T> _xy, Vector2<T> _zw) { x = _xy.x; y = _xy.y; z = _zw.z; w = _zw.w; }
+    Vector4(Vector3<T> _xyz, T _w) { x = _xyz.x; y = _xyz.y; z = _xyz.z; w = _w; }
+    Vector4(T _x, Vector3<T> _yzw) { x = _x; y = _yzw.y; z = _yzw.z; w = _yzw.w; }
 
 
     template <typename S>
     operator Vector4<S>() {
         return { (S)x, (S)y, (S)z, (S) w };
     }
+
+    template <typename S>
+    operator Vector3<S>() {
+        return {(S)x, (S)y, (S)z};
+    }
+
+    template <typename S>
+    operator Vector2<S>() {
+        return {(S)x, (S)y};
+    }
     
+    T& operator[](u32 index) {
+        return buffer[index];
+    }
 
     static Vector4<T> zero() {
         return { 0, 0, 0, 0 };
