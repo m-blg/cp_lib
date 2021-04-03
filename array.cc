@@ -104,6 +104,21 @@ using sarrf = Static_Array<f32, t_cap>;
 template <u32 t_cap>
 using sarrd = Static_Array<f64, t_cap>;
 
+template <typename T, u32 t_cap>
+inline u32 cap(sarr<T, t_cap> *self) { return t_cap; }
+template <typename T, u32 t_cap>
+inline u32 len(sarr<T, t_cap> *self) { return self->len; }
+template <typename T, u32 t_cap>
+inline T* begin(sarr<T, t_cap> *self) { return self->buffer; }
+template <typename T, u32 t_cap>
+inline T* end(sarr<T, t_cap> *self) { return self->buffer + self->len; }
+
+template <typename T, u32 t_cap>
+inline bool is_empty(sarr<T, t_cap> *self) { return (self->len == 0); }
+
+template <typename T, u32 t_cap>
+inline T& back(sarr<T, t_cap> *self) { return self->buffer[self->len-1]; }
+
 
 
 template <typename T, u32 t_cap>
@@ -179,11 +194,14 @@ using darri = Dynamic_Array<i32>;
 using darrf = Dynamic_Array<f32>;
 using darrd = Dynamic_Array<f64>;
 
-
 template <typename T>
-inline T* end(darr<T> *self) { return self->buffer + self->len; }
+inline u32 cap(darr<T> *self) { return self->cap; }
 template <typename T>
 inline u32 len(darr<T> *self) { return self->len; }
+template <typename T>
+inline T* begin(darr<T> *self) { return self->buffer; }
+template <typename T>
+inline T* end(darr<T> *self) { return self->buffer + self->len; }
 
 template <typename T>
 inline bool is_empty(darr<T> *self) { return (self->len == 0); }

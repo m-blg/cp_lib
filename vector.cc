@@ -15,25 +15,43 @@ union Vector2 {
     Vector2() = default;
     Vector2(T _x, T _y) { x = _x; y = _y; }
 
+    Vector2 operator-();
 
     template <typename S>
-    operator Vector2<S>() {
-        return {(S)x, (S)y};
-    }
+    operator Vector2<S>();
 
-    T& operator[](u32 index) {
-        return buffer[index];
-    }
+    T& operator[](u32 index);
 
-    // Functions
-    static Vector2<T> zero() {
-        return { 0, 0 };
-    }
-
-    static Vector2<T> one() {
-        return { 1, 1 };
-    }
+    static Vector2<T> zero();
+    static Vector2<T> one();
 };
+
+
+template <typename T>
+Vector2<T> Vector2<T>::operator-() {
+    return { -x, -y };
+}
+
+template <typename T>
+template <typename S>
+Vector2<T>::operator Vector2<S>() {
+    return {(S)x, (S)y};
+}
+
+template <typename T>
+T& Vector2<T>::operator[](u32 index) {
+    return buffer[index];
+}
+
+template <typename T>
+Vector2<T> Vector2<T>::zero() {
+    return { 0, 0 };
+}
+
+template <typename T>
+Vector2<T> Vector2<T>::one() {
+    return { 1, 1 };
+}
 
 template <typename T>
 using vec2 = Vector2<T>;
@@ -143,31 +161,44 @@ union Vector3 {
     Vector3(Vector2<T> _xy, T _z) { x = _xy.x; y = _xy.y; z = _z; }
     Vector3(T _x, Vector2<T> _yz) { x = _x; y = _yz.y; z = _yz.z; }
 
-
     template <typename S>
-    operator Vector3<S>() {
-        return {(S)x, (S)y, (S)z};
-    }
-
+    operator Vector3<S>();
     template <typename S>
-    operator Vector2<S>() {
-        return {(S)x, (S)y};
-    }
+    operator Vector2<S>();
 
-    T& operator[](u32 index) {
-        return buffer[index];
-    }
-    
+    T& operator[](u32 index);
 
-    static Vector3<T> zero() {
-        return { 0, 0, 0 };
-    }
-
-    static Vector3<T> one() {
-        return { 1, 1, 1 };
-    }
-
+    static Vector3 zero();
+    static Vector3 one();
 };
+
+template<typename T>
+template <typename S>
+Vector3<T>::operator Vector3<S>() {
+    return {(S)x, (S)y, (S)z};
+}
+
+template<typename T>
+template <typename S>
+Vector3<T>::operator Vector2<S>() {
+    return {(S)x, (S)y};
+}
+
+template<typename T>
+T& Vector3<T>::operator[](u32 index) {
+    return buffer[index];
+}
+
+
+template<typename T>
+Vector3<T> Vector3<T>::zero() {
+    return { 0, 0, 0 };
+}
+
+template<typename T>
+Vector3<T> Vector3<T>::one() {
+    return { 1, 1, 1 };
+}
 
 
 template <typename T>
@@ -281,35 +312,51 @@ union Vector4 {
     Vector4(Vector3<T> _xyz, T _w) { x = _xyz.x; y = _xyz.y; z = _xyz.z; w = _w; }
     Vector4(T _x, Vector3<T> _yzw) { x = _x; y = _yzw.y; z = _yzw.z; w = _yzw.w; }
 
-
     template <typename S>
-    operator Vector4<S>() {
-        return { (S)x, (S)y, (S)z, (S) w };
-    }
-
+    operator Vector4<S>();
     template <typename S>
-    operator Vector3<S>() {
-        return {(S)x, (S)y, (S)z};
-    }
-
+    operator Vector3<S>();
     template <typename S>
-    operator Vector2<S>() {
-        return {(S)x, (S)y};
-    }
-    
-    T& operator[](u32 index) {
-        return buffer[index];
-    }
+    operator Vector2<S>();    
 
-    static Vector4<T> zero() {
-        return { 0, 0, 0, 0 };
-    }
+    T& operator[](u32 index);
 
-    static Vector4<T> one() {
-        return { 1, 1, 1, 1 };
-    }
-
+    static Vector4<T> zero();
+    static Vector4<T> one();
 };
+
+template<typename T>
+template <typename S>
+Vector4<T>::operator Vector4<S>() {
+    return { (S)x, (S)y, (S)z, (S) w };
+}
+
+template<typename T>
+template <typename S>
+Vector4<T>::operator Vector3<S>() {
+    return {(S)x, (S)y, (S)z};
+}
+
+template<typename T>
+template <typename S>
+Vector4<T>::operator Vector2<S>() {
+    return {(S)x, (S)y};
+}
+
+template<typename T>
+T& Vector4<T>::operator[](u32 index) {
+    return buffer[index];
+}
+
+template<typename T>
+Vector4<T> Vector4<T>::zero() {
+    return { 0, 0, 0, 0 };
+}
+
+template<typename T>
+Vector4<T> Vector4<T>::one() {
+    return { 1, 1, 1, 1 };
+}
 
 
 template <typename T>
