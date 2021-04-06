@@ -5,6 +5,7 @@
 
 #include "buffer.cc"
 #include "string.cc"
+#include "vector.cc"
 
 
 namespace cp {
@@ -36,6 +37,27 @@ inline void print(bool value, const char* end = "") {
 }
 inline void print(const char* value, const char* end = "") {
     printf("%s%s", value, end);
+}
+
+template <typename T>
+void print(vec2<T> v) {
+    print(v.x); printf(" "); 
+    print(v.y);
+}
+
+template <typename T>
+void print(vec3<T> v) {
+    print(v.x); printf(" "); 
+    print(v.y); printf(" "); 
+    print(v.z);
+}
+
+template <typename T>
+void print(vec4<T> v) {
+    print(v.x); printf(" "); 
+    print(v.y); printf(" "); 
+    print(v.z); printf(" "); 
+    print(v.w);
 }
 
 
