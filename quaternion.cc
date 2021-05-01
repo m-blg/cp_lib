@@ -10,20 +10,52 @@
 namespace cp {
 
 
+template <typename T>
+using cmpx = vec2<T>;
+
+using cmpxf = cmpx<f32>;
+using cmpxi = cmpx<i32>;
+using cmpxu = cmpx<u32>;
+
+
+template <typename T>
+T abs(cmpx<T> z) {
+    return magnitude(z);
+}
+
+template <typename T>
+T abs2(cmpx<T> z) {
+    return z.x * z.x + z.y * z.y;
+}
+
+template <typename T>
+cmpx<T> conjugate(cmpx<T> z) {
+    return {z.x, -z.y};
+}
+
+template <typename T>
+cmpx<T> operator*(cmpx<T> z1, cmpx<T> z2) {
+    return {z1.x * z2.x - z1.y * z2.y, z1.y * z2.x + z1.x * z2.y};
+}
+
+template <typename T>
+cmpx<T> operator/(cmpx<T> z1, cmpx<T> z2) {
+    return z1 * conjugate(z2) / abs2(z2);
+}
+
 struct Quaternion {
     float w, x, y, z;
-
-
-    void init(vec3f axis, float angle) {
-        w = cos(angle / 2);
-        x = axis.x * sin(angle / 2);
-        y = axis.y * sin(angle / 2);
-        z = axis.z * sin(angle / 2);
-    }
-
 };
 
 using quat = Quaternion;
+
+
+void init(quat *self, vec3f axis, float angle) {
+    self->w = cos(angle / 2);
+    self->x = axis.x * sin(angle / 2);
+    self->y = axis.y * sin(angle / 2);
+    self->z = axis.z * sin(angle / 2);
+}
 
 
 quat inverse(quat q);

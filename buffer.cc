@@ -11,9 +11,9 @@
 namespace cp {
 
 template <typename T>
-void dresize(T* *buffer, u32 *cap, u32 new_capacity) {
-    *buffer = m_ralloc(*buffer, new_capacity);
-    *cap = new_capacity;
+void resize(T* *buffer, u32 *cap, u32 new_cap) {
+    *buffer = m_ralloc(*buffer, new_cap);
+    *cap = new_cap;
 }
 
 template <typename T>
@@ -136,15 +136,6 @@ struct Dynamic_Buffer {
     T* buffer;
     u32 cap; // in items
 
-    void init(u32 init_cap) { 
-        buffer = m_alloc<T>(init_cap); 
-        cap = init_cap; 
-    }
-    void shut() { 
-        free(buffer); 
-        *this = {}; 
-    }
-
     T& operator[](u32 index) {
         assert(("Index out of range", index < cap));
         return buffer[index];
@@ -160,6 +151,19 @@ using dbuffi = Dynamic_Buffer<i32>;
 using dbufff = Dynamic_Buffer<f32>;
 using dbuffd = Dynamic_Buffer<f64>;
 using dbuffb = Dynamic_Buffer<bool>;
+
+
+
+template <typename T>
+void init(dbuff<T> *self, u32 init_cap) { 
+    self->buffer = m_alloc<T>(init_cap); 
+    self->cap = init_cap; 
+}
+template <typename T>
+void shut(dbuff<T> *self) { 
+    free(self->buffer); 
+    *self = {}; 
+}
 
 
 template <typename T>
@@ -179,8 +183,8 @@ Dynamic_Buffer<T> to_dbuff(sbuff<T, t_cap> *buffer) {
 
 // methods
 template <typename T>
-void dresize(Dynamic_Buffer<T>* self, u32 new_capacity) {
-    dresize(&self->buffer, &self->cap, new_capacity);
+void resize(Dynamic_Buffer<T>* self, u32 new_capacity) {
+    resize(&self->buffer, &self->cap, new_capacity);
 }
 
 template <typename T>
@@ -209,34 +213,45 @@ void print(Dynamic_Buffer<T> self, const char* item_fmt) {
     print(self->buffer, self->cap, item_fmt);
 }
 
+
+
+
+
+
 template <typename T, u32 t_dim_count>
 struct Dynamic_Buffer_N {
     T* buffer;
     u32 caps[t_dim_count];
 
-    void init(sbuffu<t_dim_count> new_caps) {
-        memcpy(caps, new_caps.buffer, t_dim_count * sizeof(u32));
-
-        u32 total_cap = 1;
-        for (u32 it : caps) {
-            total_cap *= it;
-        }
-        buffer = m_alloc<T>(total_cap);
-    }
-    void shut() {
-        free(buffer);
-        *this = {};
-    }
-
-    T& get(sbuffu<t_dim_count> indexes) {
-        u32 global_index = 0u;
-        for (u32 i = 0; i < t_dim_count - 1; i++) {
-            global_index += indexes[i] * caps[i];
-        }
-        global_index += indexes[t_dim_count - 1];
-        return buffer[global_index];
-    }
+    T& get(sbuffu<t_dim_count> indexes);
 };
+
+template <typename T, u32 t_dim_count>
+void init(Dynamic_Buffer_N<T, t_dim_count> *self, sbuffu<t_dim_count> new_caps) {
+    memcpy(self->caps, new_caps.buffer, t_dim_count * sizeof(u32));
+
+    u32 total_cap = 1;
+    for (u32 it : self->caps) {
+        total_cap *= it;
+    }
+    self->buffer = m_alloc<T>(total_cap);
+}
+
+template <typename T, u32 t_dim_count>
+void shut(Dynamic_Buffer_N<T, t_dim_count> *self) {
+    free(self->buffer);
+    *self = {};
+}
+
+template <typename T, u32 t_dim_count>
+T& get(Dynamic_Buffer_N<T, t_dim_count> *self, sbuffu<t_dim_count> indexes) {
+    u32 global_index = 0u;
+    for (u32 i = 0; i < t_dim_count - 1; i++) {
+        global_index += indexes[i] * self->caps[i];
+    }
+    global_index += indexes[t_dim_count - 1];
+    return self->buffer[global_index];
+}
 
 template <typename T, u32 t_dim_count>
 u32 total_cap(Dynamic_Buffer_N<T, t_dim_count> *buffer) {
@@ -249,43 +264,18 @@ u32 total_cap(Dynamic_Buffer_N<T, t_dim_count> *buffer) {
 
 
 
+
+
+
 template <typename T>
 struct Dynamic_Buffer2 {
     T* buffer;
     u32 y_cap; // rows
     u32 x_cap; // collumns
 
-    void init(u32 init_y_cap, u32 init_x_cap) {
-        y_cap = init_y_cap;
-        x_cap = init_x_cap;
-        buffer = m_alloc<T>(y_cap* x_cap);
-    }
-    void init_const(u32 init_y_cap, u32 init_x_cap, T value) {
-        y_cap = init_y_cap;
-        x_cap = init_x_cap;
-        buffer = m_alloc<T>(y_cap * x_cap);
-        T* endp = buffer + y_cap * x_cap;
-        for (T* p = buffer; p < endp; p++) {
-            *p = value;
-        }
-    }
 
-    void shut() {
-        free(buffer);
-        *this = {};
-    }
-
-    T& get(u32 y_index, u32 x_index) {
-        return buffer[x_cap* y_index + x_index];
-    }
-    bool sget(T* *out_p, u32 y_index, u32 x_index) {
-        if (y_index < y_cap && x_index < x_cap){
-            *out_p = &buffer[x_cap* y_index + x_index];
-            return true;
-        }
-        return false;
-    }
-
+    T& get(u32 y_index, u32 x_index);
+    bool sget(T* *out_p, u32 y_index, u32 x_index);
 };
 
 template <typename T>
@@ -296,6 +286,45 @@ using dbuff2i = Dynamic_Buffer2<i32>;
 using dbuff2f = Dynamic_Buffer2<f32>;
 using dbuff2d = Dynamic_Buffer2<f64>;
 using dbuff2b = Dynamic_Buffer2<bool>;
+
+
+template <typename T>
+T& Dynamic_Buffer2<T>::get(u32 y_index, u32 x_index) {
+    return buffer[x_cap * y_index + x_index];
+}
+template <typename T>
+bool Dynamic_Buffer2<T>::sget(T* *out_p, u32 y_index, u32 x_index) {
+    if (y_index < y_cap && x_index < x_cap){
+        *out_p = &buffer[x_cap* y_index + x_index];
+        return true;
+    }
+    return false;
+}
+
+
+template <typename T>
+void init(dbuff2<T> *self, u32 init_y_cap, u32 init_x_cap) {
+    self->y_cap = init_y_cap;
+    self->x_cap = init_x_cap;
+    self->buffer = m_alloc<T>(self->y_cap* self->x_cap);
+}
+
+template <typename T>
+void init_const(dbuff2<T> *self, u32 init_y_cap, u32 init_x_cap, T value) {
+    self->y_cap = init_y_cap;
+    self->x_cap = init_x_cap;
+    self->buffer = m_alloc<T>(self->y_cap * self->x_cap);
+    T* endp = self->buffer + self->y_cap * self->x_cap;
+    for (T* p = self->buffer; p < endp; p++) {
+        *p = value;
+    }
+}
+
+template <typename T>
+void shut(dbuff2<T> *self) {
+    free(self->buffer);
+    *self = {};
+}
 
 
 template<typename T>
@@ -352,12 +381,11 @@ auto& _get(u32 index, void* buffer) {
 
 
 
+
+
 struct Dynamic_Element_Size_Buffer {
     dbuff<u8> buffer;
     u32 stride;
-
-    void init(u32 init_cap) { buffer.init(init_cap); }
-    void shut() { buffer.shut(); }
 
     u8& operator[](u32 index) {
         return *(buffer.buffer + stride * index);
@@ -365,6 +393,11 @@ struct Dynamic_Element_Size_Buffer {
 };
 
 using desbuff = Dynamic_Element_Size_Buffer;
+
+
+void init(desbuff *self, u32 init_cap) { init(&self->buffer, init_cap); }
+void shut(desbuff *self) { shut(&self->buffer); }
+
 
 inline u32 cap(desbuff *buffer) { return cap(&buffer->buffer); }
 inline u8* begin(desbuff *buffer) { return begin(&buffer->buffer); }

@@ -12,6 +12,11 @@ namespace cp {
     T clamp(T value, T min_value, T max_value) {
         return max(min(value, max_value), min_value);
     }
+
+    template <typename T>
+    T lerp(f32 t, T value1, T value2) {
+        return (1 - t) * value1 + t * value2;
+    }
     
     template <typename T>
     T integrate(dbuff<T> range, T t1, T t2) {

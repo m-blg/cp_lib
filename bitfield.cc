@@ -102,18 +102,6 @@ struct Dynamic_Bit_Field {
     u32 cap; // in bytes
     u32 bit_count;
 
-    void init_bits(u32 init_bit_count=0) { 
-        cap = bitfld_byte_count(init_bit_count); 
-        bit_count = init_bit_count;
-        buffer = m_alloc<u8>(cap); 
-    }
-    void init_bytes(u32 init_cap=0) { 
-        cap = init_cap; 
-        bit_count = init_cap * 8u;
-        buffer = m_alloc<u8>(init_cap); 
-    }
-    void shut() { free(buffer); }
-
 
     static i32 cmp_bitfld(Dynamic_Bit_Field *first, Dynamic_Bit_Field *second) {
         if (first->bit_count == second->bit_count) {
@@ -131,9 +119,27 @@ struct Dynamic_Bit_Field {
 
 using dbitfld = Dynamic_Bit_Field;
 
+
+void init_bits(dbitfld *self, u32 init_bit_count=0) { 
+    self->cap = bitfld_byte_count(init_bit_count); 
+    self->bit_count = init_bit_count;
+    self->buffer = m_alloc<u8>(self->cap); 
+}
+void init_bytes(dbitfld *self, u32 init_cap=0) { 
+    self->cap = init_cap; 
+    self->bit_count = init_cap * 8u;
+    self->buffer = m_alloc<u8>(init_cap); 
+}
+void shut(dbitfld *self) { free(self->buffer); }
+
+
 inline u32 cap(dbitfld *buffer) { return buffer->cap; }
 inline u8* begin(dbitfld *buffer) { return buffer->buffer; }
 inline u8* end(dbitfld *buffer) { return buffer->buffer + buffer->cap; }
+
+void clear(dbitfld *self, i32 value=0) {
+    memset(self->buffer, value, self->cap);
+}
 
 bool get_bit(dbitfld self, u32 bit_index) {
     //assert(("Bit index out of range", bit_index < bit_count));

@@ -28,10 +28,10 @@ inline T* m_ralloc(T* ptr, u32 count) {
 //}
 
 
-#define alloci(x) alloc<int>((x))
-#define allocl(x) alloc<long>((x))
-#define allocf(x) alloc<float>((x))
-#define allocd(x) alloc<double>((x))
+#define alloci(x) m_alloc<int>((x))
+#define allocl(x) m_alloc<long>((x))
+#define allocf(x) m_alloc<float>((x))
+#define allocd(x) m_alloc<double>((x))
 
 
 

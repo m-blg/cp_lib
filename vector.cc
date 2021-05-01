@@ -13,6 +13,7 @@ union Vector2 {
     sbuff<T, 2> buffer;
     
     Vector2() = default;
+    Vector2(T _x) { x = _x; }
     Vector2(T _x, T _y) { x = _x; y = _y; }
 
     Vector2 operator-();
@@ -157,6 +158,7 @@ union Vector3 {
     
     
     Vector3() = default;
+    Vector3(T _x, T _y) { x = _x; y = _y; }
     Vector3(T _x, T _y, T _z) { x = _x; y = _y; z = _z; }
     Vector3(Vector2<T> _xy, T _z) { x = _xy.x; y = _xy.y; z = _z; }
     Vector3(T _x, Vector2<T> _yz) { x = _x; y = _yz.y; z = _yz.z; }
@@ -304,6 +306,8 @@ union Vector4 {
     
     
     Vector4() = default;
+    Vector4(T _x, T _y) { x = _x; y = _y; }
+    Vector4(T _x, T _y, T _z) { x = _x; y = _y; z = _z; }
     Vector4(T _x, T _y, T _z, T _w) { x = _x; y = _y; z = _z; w = _w; }
     Vector4(Vector2<T> _xy, T _z, T _w) { x = _xy.x; y = _xy.y; z = _z; w = _w; }
     Vector4(T _x, Vector2<T> _yz, T _w) { x = _x; y = _yz.y; z = _yz.z; w = _w; }

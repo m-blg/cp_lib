@@ -97,7 +97,7 @@ bool read_whole(dstr *out_str, const char* file_name) {
     }
 
     i64 fsize = file_size(file);
-    out_str->init(fsize);
+    init(out_str, fsize);
     out_str->len = fsize;
     fread(begin(out_str), sizeof(u8), cap(out_str), file);
     fclose(file);
