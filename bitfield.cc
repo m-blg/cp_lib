@@ -169,7 +169,7 @@ void set_bit(dbitfld self, u32 bit_index, bool value) {
 void dpush_bit(dbitfld *self, bool value) {
     u32 len = (self->bit_count + 1u) / 8u + (u32)((self->bit_count + 1u) % 8u > 0);
     if (len >= self->cap) {
-        dresize( &self->buffer, &self->cap, max(1u, 2u * ((*self).cap)) );
+        resize( &self->buffer, &self->cap, max(1u, 2u * ((*self).cap)) );
     }
     set_bit(*self, self->bit_count, value);
     self->bit_count++;

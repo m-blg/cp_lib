@@ -126,6 +126,11 @@ template <typename T, u32 t_cap>
 T* end(sbuff<T, t_cap> *buffer) { return buffer->buffer + t_cap; }
 
 template <typename T, u32 t_cap>
+void clear(sbuff<T, t_cap> *self, i32 value=0) {
+    memset(self->buffer, value, t_cap);
+}
+
+template <typename T, u32 t_cap>
 void print(Static_Buffer<T, t_cap> *self, const char* item_fmt) {
     print(self->buffer, t_cap, item_fmt);
 }
@@ -182,6 +187,11 @@ Dynamic_Buffer<T> to_dbuff(sbuff<T, t_cap> *buffer) {
 
 
 // methods
+template <typename T>
+void clear(dbuff<T> *self, i32 value=0) {
+    memset(self->buffer, value, self->cap);
+}
+
 template <typename T>
 void resize(Dynamic_Buffer<T>* self, u32 new_capacity) {
     resize(&self->buffer, &self->cap, new_capacity);
@@ -326,20 +336,34 @@ void shut(dbuff2<T> *self) {
     *self = {};
 }
 
-
 template<typename T>
-u32 total_cap(dbuff2<T> *buffer) {
-    return buffer->y_cap * buffer->x_cap;
+u32 cap_x(dbuff2<T> *self) {
+    return self->x_cap;
 }
 
 template<typename T>
-T* begin(dbuff2<T> *buffer) {
-    return buffer->buffer;
+u32 cap_y(dbuff2<T> *self) {
+    return self->y_cap;
+}
+
+template<typename T>
+u32 cap_total(dbuff2<T> *self) {
+    return self->y_cap * self->x_cap;
+}
+
+template<typename T>
+T* begin(dbuff2<T> *self) {
+    return self->buffer;
 }
 
 template<typename T>
 T* end(dbuff2<T> *buffer) {
-    return buffer->buffer + total_cap(buffer);
+    return buffer->buffer + cap_total(buffer);
+}
+
+template <typename T>
+void clear(dbuff2<T> *self, i32 value=0) {
+    memset(self->buffer, value, cap_total(self));
 }
 
 

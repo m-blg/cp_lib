@@ -166,7 +166,7 @@ using darrd = Dynamic_Array<f64>;
 
 
 template <typename T>
-void init(darr<T> *self, u32 init_cap) { 
+void init(darr<T> *self, u32 init_cap=0) { 
     self->buffer = m_alloc<T>(init_cap); 
     self->cap = init_cap; 
     self->len = 0; 
@@ -225,6 +225,11 @@ void resize(darr<T> *self, u32 new_len) {
     fit_len(self);
 }
 
+template <typename T>
+void clear(darr<T> *self, i32 value=0) {
+    memset(self->buffer, value, self->cap);
+}
+
 //raw push
 template <typename T>
 void rpush(darr<T> *self, T item) {
@@ -239,7 +244,7 @@ void rpop(darr<T> *self) {
 template <typename T>
 void push(darr<T> *self, T item) {
     if (self->len >= self->cap) {
-        dresize(&self->buffer, &self->cap, 2 * self->cap + 1);
+        resize(&self->buffer, &self->cap, 2 * self->cap + 1);
     }
     self->buffer[self->len] = item;
     self->len++;
@@ -288,7 +293,7 @@ void push_range(darr<T> *self, sbuff<T, t_items_count>&& items) {
 template <typename T>
 void append(darr<T> *self, darr<T> *arr) {
     if (self->len + len(arr) > self->cap) {
-        dresize( &self->buffer, &self->cap, max(len(arr), 2 * self->cap) );
+        resize( &self->buffer, &self->cap, max(len(arr), 2 * self->cap) );
     }
 
     memcpy(self->buffer + self->len, arr->buffer, len(arr) * sizeof(T));

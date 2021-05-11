@@ -67,6 +67,23 @@ void init(dstr *self, const char* c_str) {
 
 dstr *cat(dstr *first, dstr *second) {
     append(first, second);
+    return first;
+}
+
+template <u32 append_str_count>
+dstr *cat(dstr *first, sbuff<dstr, append_str_count> others) {
+    for (auto it = begin(&others); it < end(others); it++) 
+        append(first, it);
+    return first;
+}
+
+//alloc
+template <u32 append_str_count>
+dstr join(sbuff<dstr, append_str_count> strings) {
+    dstr first; init(&first);
+    for (auto it = begin(&strings); it < end(strings); it++) 
+        append(first, it);
+    return first;
 }
 
 }
