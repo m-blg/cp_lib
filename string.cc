@@ -1,59 +1,145 @@
 
+#pragma once
 #include "array.cc"
 
 namespace cp {
 
-template <typename T, u32 t_static_cap>
-struct String {
-    T sbuffer[t_static_cap];
-    T* dbuffer;
-    u32 cap;
-    u32 len;
+
+template <typename T>
+using String = Dynamic_Buffer<T>;
+using str = String<char>;
+
+template <>
+struct Dynamic_Buffer<char> {
+    char* buffer;
+    u32 cap; // in items
+
+    Dynamic_Buffer() = default;
+    Dynamic_Buffer(char* _buffer, u32 _cap);
+    Dynamic_Buffer(const char* c_str);
+
+    char& operator[](u32 index) {
+        assert(("Index out of range", index < cap));
+        return buffer[index];
+    }
+
+    typedef char type;
 };
 
 
-template <typename T, u32 t_static_cap>
-void init(String<T, t_static_cap> *self, u32 init_cap=0) {
-    if (init_cap > t_static_cap) {
-        self->dbuffer = m_alloc<T>(init_cap - t_static_cap);
-        self->cap = init_cap;
+Dynamic_Buffer<char>::Dynamic_Buffer(char* _buffer, u32 _cap)
+: buffer(_buffer), cap(_cap){}
+Dynamic_Buffer<char>::Dynamic_Buffer(const char* c_str) {
+    u32 c_str_len = strlen(c_str);
+    buffer = (char*)c_str;
+    cap = c_str_len;
+}
+
+template <typename T>
+u32 len(String<T> *self) {
+    return cap(self);
+}
+
+template <typename T>
+void copy(T* dst_ptr, String<T> src) {
+    memcpy(dst_ptr, beginp(&src), sizeof(T) * len(&src));
+}
+
+void print(dbuff<char> self, const char* item_fmt="%c") {
+    print_fmt(self.buffer, self.cap, item_fmt);
+}
+
+
+template <typename T>
+bool operator==(String<T> f, String<T> s)  {
+    if (len(&f) != len(&s)) {
+        return false;
     } else {
-        self->dbuffer = null;
-        self->cap = t_static_cap;
+        auto it_f = begin(&f);
+        auto it_s = begin(&s);
+        for (; it_f != end(&f); it_f++, it_s++) {
+            if (*it_f != *it_s) return false;
+        }
+        return true;
     }
-    self->len = 0;
 }
 
-
-template <typename T, u32 t_static_cap>
-void init(String<T, t_static_cap> *self, const T* c_str) {
-    u32 init_cap = strlen(c_str);
-    if (init_cap > t_static_cap) {
-        self->dbuffer = m_alloc<T>(init_cap - t_static_cap);
-        self->cap = init_cap;
+template <typename T>
+bool operator!=(String<T> f, String<T> s)  {
+    if (len(&f) != len(&s)) {
+        return true;
     } else {
-        self->dbuffer = null;
-        self->cap = t_static_cap;
+        auto it_f = begin(&f);
+        auto it_s = begin(&s);
+        for (; it_f != end(&f); it_f++, it_s++) {
+            if (*it_f != *it_s) return true;
+        }
+        return false;
     }
-    self->len = init_cap;
 }
 
-template <typename T, u32 t_static_cap>
-void shut(String<T, t_static_cap> *self) {
-    if (self->dbuffer != null)
-        free(self->dbuffer);
-    self->dbuffer = null;
-    self->cap = 0;
-    self->len = 0;
+template <typename T>
+using Dynamic_String_Buffer = Dynamic_Array<T>;
+using dstrb = Dynamic_String_Buffer<char>;
+
+str to_str(dstrb sb) {
+    return {sb.buffer, sb.len};
 }
 
-template <typename T, u32 t_static_cap>
-String<T, t_static_cap>* cat(String<T, t_static_cap> *first, String<T, t_static_cap> *second) {
+template <typename T>
+void cat(Dynamic_String_Buffer<T> *out_sb, dbuff<String<T>> tokens) {
+    u32 total_len = 0;
+    for (auto it = begin(&tokens); it != end(&tokens); it++) {
+        total_len += len(it.ptr);
+    }
+    if (out_sb->cap < total_len) {
+        resize(&out_sb->db, total_len);
+    }
+    out_sb->len = 0;
+    // append
+    for (auto it = begin(&tokens); it != end(&tokens); it++) {
+        copy(beginp(out_sb) + len(out_sb), *it);
+    }
+}
 
+template <typename T, u32 t_cap>
+using Static_String_Buffer = Static_Array<T, t_cap>;
+using sstrb = Static_String_Buffer<char, 32>;
+
+str to_str(sstrb *sb) {
+    return {sb->buffer, sb->len};
+}
+
+template <typename T, u32 t_cap, typename t_token_buff>
+void cat(Static_String_Buffer<T, t_cap> *out_sb, t_token_buff tokens) {
+    u32 total_len = 0;
+    for (auto it = begin(&tokens); it != end(&tokens); it++) {
+        total_len += len(it.ptr);
+    }
+    assert(t_cap >= total_len);
+    out_sb->len = 0;
+    // append
+    for (auto it = begin(&tokens); it != end(&tokens); it++) {
+        copy(beginp(out_sb) + len(out_sb), *it);
+        out_sb->len += len(it.ptr);
+    }
 }
 
 
-using str = String<char, 16>;
+template <typename T, typename t_arr>
+void split(t_arr *out_tokens, String<T> s, T delim) {
+    str token = { beginp(&s), 0 };
+    for (auto it = begin(&s); it != end(&s); it++) {
+        if (*it == delim) {
+            push(out_tokens, token);
+            token.buffer += token.cap + 1;
+            token.cap = 0;
+            continue;
+        }
+        token.cap++;
+    }
+    push(out_tokens, token);
+}
 
 
 using dstr = Dynamic_Array<char>;

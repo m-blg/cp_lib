@@ -69,8 +69,6 @@ struct Static_Array {
     T buffer[t_cap];
     u32 len;
     
-    void init() { len = 0; }
-    
     constexpr u32 cap() {
         return t_cap;
     }
@@ -80,6 +78,7 @@ struct Static_Array {
         return buffer[index];
     }
    
+    typedef T type;
 };
 
 template <typename T, u32 t_cap>
@@ -99,9 +98,13 @@ inline u32 cap(sarr<T, t_cap> *self) { return t_cap; }
 template <typename T, u32 t_cap>
 inline u32 len(sarr<T, t_cap> *self) { return self->len; }
 template <typename T, u32 t_cap>
-inline T* begin(sarr<T, t_cap> *self) { return self->buffer; }
+inline T* beginp(sarr<T, t_cap> *self) { return self->buffer; }
 template <typename T, u32 t_cap>
-inline T* end(sarr<T, t_cap> *self) { return self->buffer + self->len; }
+inline T* endp(sarr<T, t_cap> *self) { return self->buffer + self->len; }
+template <typename T, u32 t_cap>
+inline buff_iter<T> begin(sarr<T, t_cap> *self) { return {self->buffer}; }
+template <typename T, u32 t_cap>
+inline buff_iter<T> end(sarr<T, t_cap> *self) { return {self->buffer + self->len}; }
 
 template <typename T, u32 t_cap>
 inline bool is_empty(sarr<T, t_cap> *self) { return (self->len == 0); }
@@ -113,11 +116,13 @@ inline T& back(sarr<T, t_cap> *self) { return self->buffer[self->len-1]; }
 
 template <typename T, u32 t_cap>
 void push(sarr<T, t_cap> *self, T item) {
+    assert(self->len < t_cap);
     arr_rpush(self->buffer, &self->len, item);
 }
 
 template <typename T, u32 t_cap>
 T pop(sarr<T, t_cap> *self) {
+    assert(self->len > 0);
     return arr_pop(self->buffer, &self->len);
 }
 
@@ -132,8 +137,13 @@ void remove(sarr<T, t_cap> *self, u32 index) {
 }
 
 template <typename T, u32 t_cap>
-void print(sarr<T, t_cap> *self, const char* item_fmt) {
-    buff_print(self->buffer, self->len, item_fmt);
+void print_fmt(sarr<T, t_cap> *self, const char* item_fmt) {
+    print_fmt(self->buffer, self->len, item_fmt);
+}
+
+template <typename T, u32 t_cap>
+void print(sarr<T, t_cap> *self) {
+    print(self->buffer, self->len);
 }
 
 
@@ -154,6 +164,12 @@ struct Dynamic_Array {
         return buffer[index];
     }
 
+    // template <u32 t_cap>
+    // Dynamic_Array<T, t_cap> operator Dynamic_Array() {
+    //     return {}
+    // }
+
+    typedef T type;
 };
 
 template <typename T>
@@ -197,9 +213,13 @@ inline u32 cap(darr<T> *self) { return self->cap; }
 template <typename T>
 inline u32 len(darr<T> *self) { return self->len; }
 template <typename T>
-inline T* begin(darr<T> *self) { return self->buffer; }
+inline T* beginp(darr<T> *self) { return self->buffer; }
 template <typename T>
-inline T* end(darr<T> *self) { return self->buffer + self->len; }
+inline T* endp(darr<T> *self) { return self->buffer + self->len; }
+template <typename T>
+inline buff_iter<T> begin(darr<T> *self) { return {self->buffer}; }
+template <typename T>
+inline buff_iter<T> end(darr<T> *self) { return {self->buffer + self->len}; }
 
 template <typename T>
 inline bool is_empty(darr<T> *self) { return (self->len == 0); }
@@ -274,10 +294,14 @@ void remove(darr<T> *self, T* it) {
     arr_remove(self->buffer, &self->len, it);
 }
 
+template <typename T>
+void print_fmt(darr<T> *self, const char* item_fmt) {
+    print_fmt(self->buffer, self->len, item_fmt);
+}
 
 template <typename T>
-void print(darr<T> *self, const char* item_fmt) {
-    buff_print(self->buffer, self->len, item_fmt);
+void print(darr<T> *self) {
+    print(self->buffer, self->len);
 }
 
 template <typename T, u32 t_items_count>

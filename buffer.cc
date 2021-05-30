@@ -26,11 +26,21 @@ void scan(T* buffer, u32 len, const char* item_fmt) {
 }
 
 template <typename T>
-void print(T* buffer, u32 len, const char* item_fmt) {
+void print_fmt(T* buffer, u32 len, const char* item_fmt) {
     T* endp = buffer + len;
     for (T* p = buffer; p < endp; p++) {
         printf(item_fmt, *p);
     }
+}
+
+template <typename T>
+void print(T* buffer, u32 len) {
+    T* endp = buffer + len;
+    T* p = buffer;
+    for (; p < endp - 1; p++) {
+        print(*p); printf(" ");
+    }
+    print(*p);
 }
 
 template <typename t_first>
@@ -80,15 +90,160 @@ struct Tuple<T> {
     T first;
 };
 
+
+// iterator
+// struct Iterator {
+
+// };
+
+template <typename t_iter>
+auto& operator*(const t_iter& it) {
+    return *it.ptr;
+}
+
+template <typename t_iter>
+void operator++(t_iter& it) {
+    next(&it);
+}
+template <typename t_iter>
+void operator++(t_iter& it, int) {
+    next(&it);
+}
+template <typename t_iter>
+void operator--(t_iter& it) {
+    prev(&it);
+}
+template <typename t_iter>
+void operator--(t_iter& it, int) {
+    prev(&it);
+}
+
+template <typename t_iter>
+t_iter operator+(t_iter it, u32 step) {
+    next(&it, step);
+    return it;
+}
+template <typename t_iter>
+t_iter operator-(t_iter it, u32 step) {
+    prev(&it, step);
+    return it; 
+}
+
+template <typename t_iter>
+void operator+=(t_iter& it, u32 step) {
+    next(&it, step);
+}
+template <typename t_iter>
+void operator-=(t_iter& it, u32 step) {
+    prev(&it, step);
+}
+
+template <typename t_iter>
+bool operator!=(const t_iter& f, const t_iter& s) {
+    return f.ptr != s.ptr;
+}
+template <typename t_iter>
+bool operator==(const t_iter& f, const t_iter& s) {
+    return f.ptr == s.ptr;
+}
+
+
+
+template <typename T>
+struct Buffer_Iterator {
+    T* ptr;
+
+    T* operator->();
+};
+
+template <typename T>
+using buff_iter = Buffer_Iterator<T>;
+
+template <typename T>
+T* Buffer_Iterator<T>::operator->() {
+    return this->ptr;
+}
+// template <typename T>
+// T& operator*(const buff_iter<T>& it) {
+//     return *it.ptr;
+// }
+
+
+template <typename T>
+void next(buff_iter<T> *it) {
+    it->ptr++;
+}
+
+template <typename T>
+void prev(buff_iter<T> *it) {
+    it->ptr--;
+}
+
+//template <typename T>
+//void operator++(buff_iter<T>& it) {
+    //next(&it);
+//}
+//template <typename T>
+//void operator++(buff_iter<T>& it, int) {
+    //next(&it);
+//}
+
+//template <typename T>
+//void operator--(buff_iter<T>& it) {
+    //prev(&it);
+//}
+
+//template <typename T>
+//void operator--(buff_iter<T>& it, int) {
+    //prev(&it);
+//}
+
+//template <typename T>
+//bool operator!=(buff_iter<T>& f, buff_iter<T>& s) {
+    //return f.ptr != s.ptr;
+//}
+
+//template <typename T>
+//bool operator==(buff_iter<T>& f, buff_iter<T>& s) {
+    //return f.ptr == s.ptr;
+//}
+
+
+template <typename t_buff> 
+auto sum(t_buff buffer){
+    typename t_buff::type total = {};
+    for (auto it = begin(&buffer); it != end(&buffer); it++) {
+        total += *it;
+    }
+    return total;
+}
+
+// generic stuff
+
 template <typename T, template <typename> class t_buff>
 inline u32 cap(t_buff<T> *buffer) { return buffer->cap; }
 template <typename T, template <typename> class t_buff>
 inline u32 size(t_buff<T> *buffer) { return sizeof(T) * buffer->cap; }
 template <typename T, template <typename> class t_buff>
-inline T* begin(t_buff<T> *buffer) { return buffer->buffer; }
+inline T* beginp(t_buff<T> *buffer) { return buffer->buffer; }
 template <typename T, template <typename> class t_buff>
-inline T* end(t_buff<T> *buffer) { return buffer->buffer + buffer->cap; }
+inline T* endp(t_buff<T> *buffer) { return buffer->buffer + buffer->cap; }
+template <typename T, template <typename> class t_dst_buff, template <typename> class t_src_buff>
+void copy(t_dst_buff<T> *dst_buff, t_src_buff<T> *src_buff) { 
+    assert(cap(dst_buff) >= cap(src_buff));
+    memcpy(beginp(dst_buff), beginp(src_buff), sizeof(T) * cap(src_buff));
+}
+template <typename T, template<typename> class t_buff>
+buff_iter<T> begin(t_buff<T> *self) {
+    return {beginp(self)};
+}
+template <typename T, template<typename> class t_buff>
+buff_iter<T> end(t_buff<T> *self) {
+    return {beginp(self) + cap(self)};
+}
 
+
+// Static Buffer
 
 // wrapper arround T[t_cap], t_cap - buffer capa in items
 template <typename T, u32 t_cap>
@@ -100,6 +255,7 @@ struct Static_Buffer {
         return buffer[index];
     }
 
+    typedef T type;
 };
 
 template <typename T, u32 t_cap>
@@ -117,13 +273,17 @@ template <u32 t_cap>
 using sbuffb = Static_Buffer<bool, t_cap>;
 
 template <typename T, u32 t_cap>
-u32 cap(sbuff<T, t_cap> *buffer) { return t_cap; }
+inline u32 cap(sbuff<T, t_cap> *self) { return t_cap; }
 template <typename T, u32 t_cap>
-u32 size(sbuff<T, t_cap> *buffer) { return sizeof(T) * t_cap; }
+inline u32 size(sbuff<T, t_cap> *self) { return sizeof(T) * t_cap; }
 template <typename T, u32 t_cap>
-T* begin(sbuff<T, t_cap> *buffer) { return buffer->buffer; }
+inline T* beginp(sbuff<T, t_cap> *self) { return self->buffer; }
 template <typename T, u32 t_cap>
-T* end(sbuff<T, t_cap> *buffer) { return buffer->buffer + t_cap; }
+inline T* endp(sbuff<T, t_cap> *self) { return self->buffer + t_cap; }
+template <typename T, u32 t_cap>
+inline buff_iter<T> begin(sbuff<T, t_cap> *self) { return {self->buffer}; }
+template <typename T, u32 t_cap>
+inline buff_iter<T> end(sbuff<T, t_cap> *self) { return {self->buffer + t_cap}; }
 
 template <typename T, u32 t_cap>
 void clear(sbuff<T, t_cap> *self, i32 value=0) {
@@ -131,10 +291,36 @@ void clear(sbuff<T, t_cap> *self, i32 value=0) {
 }
 
 template <typename T, u32 t_cap>
-void print(Static_Buffer<T, t_cap> *self, const char* item_fmt) {
+void print_fmt(Static_Buffer<T, t_cap> *self, const char* item_fmt) {
     print(self->buffer, t_cap, item_fmt);
 }
 
+template <typename... Ts>
+struct Arg_Count {
+    constexpr static u32 count() {};
+};
+
+template <typename T, typename... Ts>
+struct Arg_Count<T, Ts...> {
+    constexpr static u32 count() {
+        return Arg_Count<Ts...>::count() + 1;
+    }
+};
+
+template <typename T>
+struct Arg_Count<T> {
+    constexpr static u32 count() {
+        return 1;
+    }
+};
+
+template <typename T, typename... Ts>
+auto pack(T first, Ts... rest) {
+    return sbuff<T, Arg_Count<T, Ts...>::count()> {first, rest...};
+}
+
+
+// Dynamic Buffer
 
 template <typename T>
 struct Dynamic_Buffer {
@@ -146,6 +332,7 @@ struct Dynamic_Buffer {
         return buffer[index];
     }
 
+    typedef T type;
 };
 
 template <typename T>
@@ -172,17 +359,21 @@ void shut(dbuff<T> *self) {
 
 
 template <typename T>
-inline u32 cap(dbuff<T> *buffer) { return buffer->cap; }
+inline u32 cap(dbuff<T> *self) { return self->cap; }
 template <typename T>
-inline u32 size(dbuff<T> *buffer) { return sizeof(T) * buffer->cap; }
+inline u32 size(dbuff<T> *self) { return sizeof(T) * self->cap; }
 template <typename T>
-inline T* begin(dbuff<T> *buffer) { return buffer->buffer; }
+inline T* beginp(dbuff<T> *self) { return self->buffer; }
 template <typename T>
-inline T* end(dbuff<T> *buffer) { return buffer->buffer + buffer->cap; }
+inline T* endp(dbuff<T> *self) { return self->buffer + self->cap; }
+template <typename T>
+inline buff_iter<T> begin(dbuff<T> *self) { return {self->buffer}; }
+template <typename T>
+inline buff_iter<T> end(dbuff<T> *self) { return {self->buffer + self->cap}; }
 
 template <typename T, u32 t_cap>
-Dynamic_Buffer<T> to_dbuff(sbuff<T, t_cap> *buffer) {
-    return { buffer->buffer, t_cap };
+Dynamic_Buffer<T> to_dbuff(sbuff<T, t_cap> *self) {
+    return { self->buffer, t_cap };
 }
 
 
@@ -219,8 +410,15 @@ T sum_lmd(dbuff<T> buffer, T& (*access_lmd)(T*)) {
 
 
 template <typename T>
-void print(Dynamic_Buffer<T> self, const char* item_fmt) {
-    print(self->buffer, self->cap, item_fmt);
+void print_fmt(dbuff<T> self, const char* item_fmt) {
+    print(self.buffer, self.cap, item_fmt);
+}
+
+template <typename T>
+void print(dbuff<T> self) {
+    for (auto it = begin(&self); it != end(&self); it++) {
+        print(*it);
+    }
 }
 
 
@@ -234,6 +432,8 @@ struct Dynamic_Buffer_N {
     u32 caps[t_dim_count];
 
     T& get(sbuffu<t_dim_count> indexes);
+
+    typedef T type;
 };
 
 template <typename T, u32 t_dim_count>
@@ -264,7 +464,7 @@ T& get(Dynamic_Buffer_N<T, t_dim_count> *self, sbuffu<t_dim_count> indexes) {
 }
 
 template <typename T, u32 t_dim_count>
-u32 total_cap(Dynamic_Buffer_N<T, t_dim_count> *buffer) {
+u32 cap(Dynamic_Buffer_N<T, t_dim_count> *buffer) {
     u32 total_cap = 1;
     for (u32 it : buffer->caps) {
         total_cap *= it;
@@ -280,12 +480,14 @@ u32 total_cap(Dynamic_Buffer_N<T, t_dim_count> *buffer) {
 template <typename T>
 struct Dynamic_Buffer2 {
     T* buffer;
-    u32 y_cap; // rows
-    u32 x_cap; // collumns
+    u32 cap_y; // rows
+    u32 cap_x; // collumns
 
 
     T& get(u32 y_index, u32 x_index);
     bool sget(T* *out_p, u32 y_index, u32 x_index);
+
+    typedef T type;
 };
 
 template <typename T>
@@ -300,12 +502,12 @@ using dbuff2b = Dynamic_Buffer2<bool>;
 
 template <typename T>
 T& Dynamic_Buffer2<T>::get(u32 y_index, u32 x_index) {
-    return buffer[x_cap * y_index + x_index];
+    return buffer[cap_x * y_index + x_index];
 }
 template <typename T>
 bool Dynamic_Buffer2<T>::sget(T* *out_p, u32 y_index, u32 x_index) {
-    if (y_index < y_cap && x_index < x_cap){
-        *out_p = &buffer[x_cap* y_index + x_index];
+    if (y_index < cap_y && x_index < cap_x){
+        *out_p = &buffer[cap_x* y_index + x_index];
         return true;
     }
     return false;
@@ -314,17 +516,17 @@ bool Dynamic_Buffer2<T>::sget(T* *out_p, u32 y_index, u32 x_index) {
 
 template <typename T>
 void init(dbuff2<T> *self, u32 init_y_cap, u32 init_x_cap) {
-    self->y_cap = init_y_cap;
-    self->x_cap = init_x_cap;
-    self->buffer = m_alloc<T>(self->y_cap* self->x_cap);
+    self->cap_y = init_y_cap;
+    self->cap_x = init_x_cap;
+    self->buffer = m_alloc<T>(self->cap_y* self->cap_x);
 }
 
 template <typename T>
 void init_const(dbuff2<T> *self, u32 init_y_cap, u32 init_x_cap, T value) {
-    self->y_cap = init_y_cap;
-    self->x_cap = init_x_cap;
-    self->buffer = m_alloc<T>(self->y_cap * self->x_cap);
-    T* endp = self->buffer + self->y_cap * self->x_cap;
+    self->cap_y = init_y_cap;
+    self->cap_x = init_x_cap;
+    self->buffer = m_alloc<T>(self->cap_y * self->cap_x);
+    T* endp = self->buffer + self->cap_y * self->cap_x;
     for (T* p = self->buffer; p < endp; p++) {
         *p = value;
     }
@@ -338,27 +540,37 @@ void shut(dbuff2<T> *self) {
 
 template<typename T>
 u32 cap_x(dbuff2<T> *self) {
-    return self->x_cap;
+    return self->cap_x;
 }
 
 template<typename T>
 u32 cap_y(dbuff2<T> *self) {
-    return self->y_cap;
+    return self->cap_y;
 }
 
 template<typename T>
-u32 cap_total(dbuff2<T> *self) {
-    return self->y_cap * self->x_cap;
+u32 cap(dbuff2<T> *self) {
+    return self->cap_y * self->cap_x;
 }
 
 template<typename T>
-T* begin(dbuff2<T> *self) {
+T* beginp(dbuff2<T> *self) {
     return self->buffer;
 }
 
 template<typename T>
-T* end(dbuff2<T> *buffer) {
-    return buffer->buffer + cap_total(buffer);
+T* endp(dbuff2<T> *self) {
+    return self->buffer + cap(self);
+}
+
+template<typename T>
+buff_iter<T> begin(dbuff2<T> *self) {
+    return {self->buffer};
+}
+
+template<typename T>
+buff_iter<T> end(dbuff2<T> *self) {
+    return {self->buffer + cap(self)};
 }
 
 template <typename T>
@@ -379,7 +591,7 @@ void print(Dynamic_Buffer2<T> *self, const char* item_fmt, const char* row_delim
     for (u32 i = 0; i < len; i++) {
         printf(item_fmt, self->buffer[i]);
 
-        if ((i % self->x_cap) == self->x_cap- 1)
+        if ((i % self->cap_x) == self->cap_x - 1)
             printf(row_delim);
     }
 }
@@ -408,6 +620,7 @@ auto& _get(u32 index, void* buffer) {
 
 
 struct Dynamic_Element_Size_Buffer {
+    typedef u8 type;
     dbuff<u8> buffer;
     u32 stride;
 
@@ -424,8 +637,10 @@ void shut(desbuff *self) { shut(&self->buffer); }
 
 
 inline u32 cap(desbuff *buffer) { return cap(&buffer->buffer); }
-inline u8* begin(desbuff *buffer) { return begin(&buffer->buffer); }
-inline u8* end(desbuff *buffer) { return end(&buffer->buffer); }
+inline u8* beginp(desbuff *buffer) { return beginp(&buffer->buffer); }
+inline u8* endp(desbuff *buffer) { return endp(&buffer->buffer); }
+inline buff_iter<u8> begin(desbuff *buffer) { return begin(&buffer->buffer); }
+inline buff_iter<u8> end(desbuff *buffer) { return end(&buffer->buffer); }
 
 //namespace mdbuffer {
 //template <typename T>

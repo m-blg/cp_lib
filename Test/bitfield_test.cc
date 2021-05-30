@@ -12,6 +12,6 @@ int main() {
     darri b;
     init(&b, 0);
     for (i32 i = 0; i < 10000; i++) {
-        dpush(&b, 0);
+        push(&b, 0);
     }
 }

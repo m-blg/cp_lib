@@ -34,25 +34,85 @@ void add_after(List_Node<T> *self, T data) {
 }
 
 
+// iterator
+template <typename T>
+struct List_Iterator {
+    List_Node<T>* ptr;
+
+    T* operator->();
+};
 
 template <typename T>
+using list_iter = List_Iterator<T>;
+
+template <typename T>
+T* List_Iterator<T>::operator->() {
+    return this->ptr;
+}
+
+template <typename T>
+void next(list_iter<T> *it) {
+    it->ptr = next(it->ptr);
+}
+
+template <typename T>
+void prev(list_iter<T> *it) {
+    it->ptr = prev(it->ptr);
+}
+
+
+template <typename T>
+void next(list_iter<T> *it, u32 step) {
+    for (u32 i = 0; i < step; i++) {
+        next(it);
+    }
+}
+
+template <typename T>
+void prev(list_iter<T> *it, u32 step) {
+    for (u32 i = 0; i < step; i++) {
+        prev(it);
+    }
+}
+
+
+template <typename T, bool t_is_circular=false>
 struct List {
     List_Node<T>* first;
     u32 len;
 }; 
 
 template <typename T>
-List_Node<T>* begin(List<T> *self) {
+using CList = List<T, true>;
+
+template <typename T, bool t_is_circular>
+List_Node<T>* beginp(List<T, t_is_circular> *self) {
+    return self->first;
+}
+template <typename T>
+List_Node<T>* endp(List<T> *self) {
+    return null;
+}
+template <typename T>
+List_Node<T>* endp(List<T, true> *self) {
     return self->first;
 }
 
+template <typename T, bool t_is_circular>
+list_iter<T> begin(List<T, t_is_circular> *self) {
+    return {self->first};
+}
 template <typename T>
-List_Node<T>* end(List<T> *self) {
-    return null;
+list_iter<T> end(List<T> *self) {
+    return {null};
+}
+template <typename T>
+list_iter<T> end(List<T, true> *self) {
+    return {self->first};
 }
 
-template <typename T>
-void init(List<T> *self) {
+template <typename T, bool t_is_circular>
+void init(List<T, t_is_circular> *self) {
     *self = {};
 }
 
@@ -66,17 +126,30 @@ void shut(List<T> *self) {
 }
 
 template <typename T>
-u32 len(List<T> *self) {
+void shut(List<T, true> *self) {
+    for (auto it = begin(self); it != end(self);) {
+        auto temp = next(it);
+        free(it);
+        it = temp;
+    }
+}
+
+template <typename T, bool t_is_circular>
+u32 len(List<T, t_is_circular> *self) {
     return self->len;
 }
 
 
-template <typename T>
-void add(List<T> *self, T data, u32 index) {
+template <typename T, bool t_is_circular>
+void add(List<T, t_is_circular> *self, T data, u32 index) {
     assert(index <= self->len);
     if (index == 0) {
         auto node = list_node_make(data);
-        node->next = self->first;
+        if constexpr(!t_is_circular) {
+            node->next = self->first;
+        } else {
+            node->next = (self->len == 0) ? node : self->first;
+        }
         self->first = node;
         self->len++;
         return;
@@ -94,8 +167,8 @@ void add(List<T> *self, T data, u32 index) {
 }
 
 
-template <typename T>
-void remove(List<T> *self, u32 index) {
+template <typename T, bool t_is_circular>
+void remove(List<T, t_is_circular> *self, u32 index) {
     assert(index < self->len);
     if (self->len == 1) {
         free(self->first);
