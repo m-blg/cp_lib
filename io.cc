@@ -88,11 +88,10 @@ void read_array(dbuff<T> buffer, FILE* file) {
     fread(buffer.buffer, sizeof(T), cap(&buffer), file);
 }
 
-bool read_whole(dstr *out_str, const char* file_name) {
+bool read_whole(dstrb *out_str, const char* file_name) {
 
     FILE* file = fopen(file_name, "r");
     if (file == null) {
-        printf("No file found");
         return false;
     }
 

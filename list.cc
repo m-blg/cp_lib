@@ -1,4 +1,4 @@
-#include "memory.cc"
+#include "buffer.cc"
 
 namespace cp {
 
@@ -9,7 +9,7 @@ struct List_Node {
 };
 
 template <typename T>
-List_Node<T>* list_node_make(T data) {
+List_Node<T>* list_node_alloc(T data) {
     List_Node<T>* node = m_alloc<List_Node<T>>(1);
     *node = { data, null }; 
     return node;
@@ -28,7 +28,7 @@ void add_after(List_Node<T> *self, List_Node<T> *node) {
 
 template <typename T>
 void add_after(List_Node<T> *self, T data) {
-    auto node = list_node_make(data);
+    auto node = list_node_alloc(data);
     node->next = next(self);
     self->next = node;
 }
@@ -39,27 +39,23 @@ template <typename T>
 struct List_Iterator {
     List_Node<T>* ptr;
 
-    T* operator->();
+    List_Node<T>* operator->();
+
+    typedef T type;
 };
 
 template <typename T>
 using list_iter = List_Iterator<T>;
 
-template <typename T>
-T* List_Iterator<T>::operator->() {
-    return this->ptr;
-}
 
 template <typename T>
 void next(list_iter<T> *it) {
     it->ptr = next(it->ptr);
 }
-
 template <typename T>
 void prev(list_iter<T> *it) {
     it->ptr = prev(it->ptr);
 }
-
 
 template <typename T>
 void next(list_iter<T> *it, u32 step) {
@@ -67,19 +63,38 @@ void next(list_iter<T> *it, u32 step) {
         next(it);
     }
 }
-
 template <typename T>
 void prev(list_iter<T> *it, u32 step) {
     for (u32 i = 0; i < step; i++) {
         prev(it);
     }
 }
+template <typename T>
+List_Node<T>* List_Iterator<T>::operator->() {return this->ptr;}
+template <typename T>
+T& operator*(const list_iter<T>& it) {return *it.ptr;}
+template <typename T>
+void operator++(list_iter<T>& it) {next(&it);}
+template <typename T>
+void operator++(list_iter<T>& it, int) {next(&it);}
+template <typename T>
+list_iter<T> operator+(list_iter<T> it, u32 step) {next(&it, step); return it;}
+template <typename T>
+void operator+=(list_iter<T>& it, u32 step) {next(&it, step);}
+template <typename T>
+bool operator!=(const list_iter<T>& f, const list_iter<T>& s) {return f.ptr != s.ptr;}
+template <typename T>
+bool operator==(const list_iter<T>& f, const list_iter<T>& s) {return f.ptr == s.ptr;}
+
 
 
 template <typename T, bool t_is_circular=false>
 struct List {
     List_Node<T>* first;
     u32 len;
+
+    typedef T type;
+    typedef list_iter<T> iter;
 }; 
 
 template <typename T>
@@ -116,20 +131,11 @@ void init(List<T, t_is_circular> *self) {
     *self = {};
 }
 
-template <typename T>
-void shut(List<T> *self) {
+template <typename T, bool t_is_circular>
+void shut(List<T, t_is_circular> *self) {
     for (auto it = begin(self); it != end(self);) {
-        auto temp = next(it);
-        free(it);
-        it = temp;
-    }
-}
-
-template <typename T>
-void shut(List<T, true> *self) {
-    for (auto it = begin(self); it != end(self);) {
-        auto temp = next(it);
-        free(it);
+        auto temp = it + 1;
+        free(it.ptr);
         it = temp;
     }
 }
@@ -144,7 +150,7 @@ template <typename T, bool t_is_circular>
 void add(List<T, t_is_circular> *self, T data, u32 index) {
     assert(index <= self->len);
     if (index == 0) {
-        auto node = list_node_make(data);
+        auto node = list_node_alloc(data);
         if constexpr(!t_is_circular) {
             node->next = self->first;
         } else {
@@ -156,12 +162,10 @@ void add(List<T, t_is_circular> *self, T data, u32 index) {
     }
 
     auto it = begin(self);
-    for (u32 i = 0; i < index - 1; i++) {
-        it = next(it);
-    }
+    it += index - 1;
 
-    auto node = list_node_make(data);
-    node->next = next(it);
+    auto node = list_node_alloc(data);
+    node->next = (it + 1).ptr;
     it->next = node;
     self->len++;
 }
@@ -188,6 +192,13 @@ void remove(List<T, t_is_circular> *self, u32 index) {
     it1->next = next(it2);
     free(it2);
     self->len--;
+}
+
+template <typename T, bool t_is_circular>
+void print(List<T, t_is_circular> *self) {
+    for (auto it = begin(self); it != end(self); it++) {
+        print(it->data); printf(" ");
+    }
 }
 
 template <typename T>

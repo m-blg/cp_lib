@@ -55,4 +55,20 @@ namespace cp {
         
     }
 
+    template <typename t_iter> 
+    t_iter find(t_iter it_begin, t_iter it_end, typename t_iter::type data) {
+        for (auto it = it_begin; it != it_end; it++) {
+            if (*it == data) {
+                return it;
+            }
+        }
+        return {null};
+    }
+
+    template <typename t_iterable> 
+    typename t_iterable::iter 
+    find(t_iterable *self, typename t_iterable::type data) {
+        return find(begin(self), end(self), data);
+    }
+
 }

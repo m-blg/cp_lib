@@ -91,122 +91,51 @@ struct Tuple<T> {
 };
 
 
-// iterator
-// struct Iterator {
-
-// };
-
-template <typename t_iter>
-auto& operator*(const t_iter& it) {
-    return *it.ptr;
-}
-
-template <typename t_iter>
-void operator++(t_iter& it) {
-    next(&it);
-}
-template <typename t_iter>
-void operator++(t_iter& it, int) {
-    next(&it);
-}
-template <typename t_iter>
-void operator--(t_iter& it) {
-    prev(&it);
-}
-template <typename t_iter>
-void operator--(t_iter& it, int) {
-    prev(&it);
-}
-
-template <typename t_iter>
-t_iter operator+(t_iter it, u32 step) {
-    next(&it, step);
-    return it;
-}
-template <typename t_iter>
-t_iter operator-(t_iter it, u32 step) {
-    prev(&it, step);
-    return it; 
-}
-
-template <typename t_iter>
-void operator+=(t_iter& it, u32 step) {
-    next(&it, step);
-}
-template <typename t_iter>
-void operator-=(t_iter& it, u32 step) {
-    prev(&it, step);
-}
-
-template <typename t_iter>
-bool operator!=(const t_iter& f, const t_iter& s) {
-    return f.ptr != s.ptr;
-}
-template <typename t_iter>
-bool operator==(const t_iter& f, const t_iter& s) {
-    return f.ptr == s.ptr;
-}
-
-
-
 template <typename T>
 struct Buffer_Iterator {
     T* ptr;
 
     T* operator->();
+
+    typedef T type;
 };
 
 template <typename T>
 using buff_iter = Buffer_Iterator<T>;
 
 template <typename T>
-T* Buffer_Iterator<T>::operator->() {
-    return this->ptr;
+void next(buff_iter<T> *it, u32 step=1) {
+    it->ptr += step;
 }
-// template <typename T>
-// T& operator*(const buff_iter<T>& it) {
-//     return *it.ptr;
-// }
-
-
 template <typename T>
-void next(buff_iter<T> *it) {
-    it->ptr++;
+void prev(buff_iter<T> *it, u32 step=1) {
+    it->ptr -= step;
 }
 
 template <typename T>
-void prev(buff_iter<T> *it) {
-    it->ptr--;
-}
-
-//template <typename T>
-//void operator++(buff_iter<T>& it) {
-    //next(&it);
-//}
-//template <typename T>
-//void operator++(buff_iter<T>& it, int) {
-    //next(&it);
-//}
-
-//template <typename T>
-//void operator--(buff_iter<T>& it) {
-    //prev(&it);
-//}
-
-//template <typename T>
-//void operator--(buff_iter<T>& it, int) {
-    //prev(&it);
-//}
-
-//template <typename T>
-//bool operator!=(buff_iter<T>& f, buff_iter<T>& s) {
-    //return f.ptr != s.ptr;
-//}
-
-//template <typename T>
-//bool operator==(buff_iter<T>& f, buff_iter<T>& s) {
-    //return f.ptr == s.ptr;
-//}
+T* Buffer_Iterator<T>::operator->() {return this->ptr;}
+template <typename T>
+T& operator*(const buff_iter<T>& it) {return *it.ptr;}
+template <typename T>
+void operator++(buff_iter<T>& it) {next(&it);}
+template <typename T>
+void operator++(buff_iter<T>& it, int) {next(&it);}
+template <typename T>
+void operator--(buff_iter<T>& it) {prev(&it);}
+template <typename T>
+void operator--(buff_iter<T>& it, int) {prev(&it);}
+template <typename T>
+buff_iter<T> operator+(buff_iter<T> it, u32 step) {next(&it, step); return it;}
+template <typename T>
+buff_iter<T> operator-(buff_iter<T> it, u32 step) {prev(&it, step); return it;}
+template <typename T>
+void operator+=(buff_iter<T>& it, u32 step) {next(&it, step);}
+template <typename T>
+void operator-=(buff_iter<T>& it, u32 step) {prev(&it, step);}
+template <typename T>
+bool operator!=(const buff_iter<T>& f, const buff_iter<T>& s) {return f.ptr != s.ptr;}
+template <typename T>
+bool operator==(const buff_iter<T>& f, const buff_iter<T>& s) {return f.ptr == s.ptr;}
 
 
 template <typename t_buff> 
@@ -256,6 +185,7 @@ struct Static_Buffer {
     }
 
     typedef T type;
+    typedef buff_iter<T> iter;
 };
 
 template <typename T, u32 t_cap>
@@ -297,7 +227,7 @@ void print_fmt(Static_Buffer<T, t_cap> *self, const char* item_fmt) {
 
 template <typename... Ts>
 struct Arg_Count {
-    constexpr static u32 count() {};
+    constexpr static u32 count();
 };
 
 template <typename T, typename... Ts>
@@ -333,6 +263,7 @@ struct Dynamic_Buffer {
     }
 
     typedef T type;
+    typedef buff_iter<T> iter;
 };
 
 template <typename T>
@@ -488,6 +419,7 @@ struct Dynamic_Buffer2 {
     bool sget(T* *out_p, u32 y_index, u32 x_index);
 
     typedef T type;
+    typedef buff_iter<T> iter;
 };
 
 template <typename T>
@@ -620,13 +552,15 @@ auto& _get(u32 index, void* buffer) {
 
 
 struct Dynamic_Element_Size_Buffer {
-    typedef u8 type;
     dbuff<u8> buffer;
     u32 stride;
 
     u8& operator[](u32 index) {
         return *(buffer.buffer + stride * index);
     }
+
+    typedef u8 type;
+    typedef buff_iter<u8> iter;
 };
 
 using desbuff = Dynamic_Element_Size_Buffer;

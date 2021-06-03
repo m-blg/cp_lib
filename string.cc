@@ -45,8 +45,11 @@ void copy(T* dst_ptr, String<T> src) {
     memcpy(dst_ptr, beginp(&src), sizeof(T) * len(&src));
 }
 
-void print(dbuff<char> self, const char* item_fmt="%c") {
+void print_fmt(dbuff<char> self, const char* item_fmt="%c") {
     print_fmt(self.buffer, self.cap, item_fmt);
+}
+void print(dbuff<char> self) {
+    printf("%.*s", self.cap, self.buffer);
 }
 
 

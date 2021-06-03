@@ -44,9 +44,12 @@ void arr_remove(T* buffer, u32 *len, u32 index) {
     }
 }
 
-template <typename T>
+template <typename T, bool t_check_null=true>
 void arr_remove(T* buffer, u32 *len, T* it) {
     assert(*len > 0);
+    if constexpr(t_check_null) {
+        assert(it != null);
+    }
     (*len)--;
     T* p_end = buffer + (*len);
     for (T* p = it; p < p_end; p++) {
@@ -79,6 +82,7 @@ struct Static_Array {
     }
    
     typedef T type;
+    typedef buff_iter<T> iter;
 };
 
 template <typename T, u32 t_cap>
@@ -170,6 +174,7 @@ struct Dynamic_Array {
     // }
 
     typedef T type;
+    typedef buff_iter<T> iter;
 };
 
 template <typename T>
@@ -248,6 +253,7 @@ void resize(darr<T> *self, u32 new_len) {
 template <typename T>
 void clear(darr<T> *self, i32 value=0) {
     memset(self->buffer, value, self->cap);
+    self->len = 0;
 }
 
 //raw push
