@@ -50,9 +50,6 @@ namespace cp {
         darr<BoundPack> stack;
         stack.init(0);
         stack.dpush({first, last});
-
-        //if ()
-        
     }
 
     template <typename t_iter> 
@@ -65,10 +62,27 @@ namespace cp {
         return {null};
     }
 
+    template <typename t_iter> 
+    t_iter find(t_iter it_begin, t_iter it_end, typename t_iter::type data, 
+            bool(*eq_lmd)(typename t_iter::type, typename t_iter::type)) 
+    {
+        for (auto it = it_begin; it != it_end; it++) {
+            if (eq_lmd(*it,data)) {
+                return it;
+            }
+        }
+        return {null};
+    }
+
     template <typename t_iterable> 
     typename t_iterable::iter 
     find(t_iterable *self, typename t_iterable::type data) {
         return find(begin(self), end(self), data);
+    }
+
+    template <typename T>
+    bool default_eq_lmd(T f, T s) {
+        return f == s;
     }
 
 }

@@ -34,20 +34,26 @@ int main() {
     auto p = pack(3, 4, 5);
 
     str s2 = "sfsff";
-    sstrb sb;
+    sstrb sb; init(&sb, 1);
+    sb[0] = 'c';
+    // init(&sb);
     cat(&sb, pack(s, s2));
     print(s); puts("");
     print(len(&s)); puts("");
 
     print(to_str(&sb)); puts("");
 
-    sarr<str, 4> tokens;
+    sarr<str, 100> tokens; init(&tokens);
     // darr<str> temp = to_dbuff(&tokens);
     split(&tokens, to_str(&sb), 's');
     print(&tokens); puts(""); 
 
     cat(&sb, tokens);
     print(to_str(&sb)); puts("");
+
+    tokens.len = 0;
+    split(&tokens, to_str(&sb), pack('c', 'd'));
+    print(&tokens); puts(""); 
 
     A<3> a = {str{null, 2}, s2, ""};
     sbuff<str, 3> sba = {str{null, 3}, s2, ""};

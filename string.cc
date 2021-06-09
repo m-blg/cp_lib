@@ -89,19 +89,20 @@ str to_str(dstrb sb) {
     return {sb.buffer, sb.len};
 }
 
-template <typename T>
-void cat(Dynamic_String_Buffer<T> *out_sb, dbuff<String<T>> tokens) {
-    u32 total_len = 0;
+template <typename T, typename t_token_buff>
+void cat(Dynamic_String_Buffer<T> *out_sb, t_token_buff tokens) {
+    u32 total_len = len(out_sb);
     for (auto it = begin(&tokens); it != end(&tokens); it++) {
         total_len += len(it.ptr);
     }
     if (out_sb->cap < total_len) {
         resize(&out_sb->db, total_len);
     }
-    out_sb->len = 0;
+
     // append
     for (auto it = begin(&tokens); it != end(&tokens); it++) {
         copy(beginp(out_sb) + len(out_sb), *it);
+        out_sb->len += len(it.ptr);
     }
 }
 
@@ -115,12 +116,12 @@ str to_str(sstrb *sb) {
 
 template <typename T, u32 t_cap, typename t_token_buff>
 void cat(Static_String_Buffer<T, t_cap> *out_sb, t_token_buff tokens) {
-    u32 total_len = 0;
+    u32 total_len = len(out_sb);
     for (auto it = begin(&tokens); it != end(&tokens); it++) {
         total_len += len(it.ptr);
     }
     assert(t_cap >= total_len);
-    out_sb->len = 0;
+
     // append
     for (auto it = begin(&tokens); it != end(&tokens); it++) {
         copy(beginp(out_sb) + len(out_sb), *it);
@@ -130,11 +131,12 @@ void cat(Static_String_Buffer<T, t_cap> *out_sb, t_token_buff tokens) {
 
 
 template <typename T, typename t_arr>
-void split(t_arr *out_tokens, String<T> s, T delim) {
-    str token = { beginp(&s), 0 };
+void split(t_arr *out_tokens, String<T> s, T delim, bool is_empty_ignored=true) {
+    String<T> token = { beginp(&s), 0 };
     for (auto it = begin(&s); it != end(&s); it++) {
         if (*it == delim) {
-            push(out_tokens, token);
+            if (!is_empty_ignored || len(&token) != 0)
+                push(out_tokens, token);
             token.buffer += token.cap + 1;
             token.cap = 0;
             continue;
@@ -144,6 +146,24 @@ void split(t_arr *out_tokens, String<T> s, T delim) {
     push(out_tokens, token);
 }
 
+template <typename t_arr, typename t_delim_buff>
+void split(t_arr *out_tokens, typename t_arr::type s, t_delim_buff delim_buff, bool is_empty_ignored=true) {
+    typename t_arr::type token = { beginp(&s), 0 };
+    for (auto it = begin(&s); it != end(&s); it++) {
+        for (auto delim = begin(&delim_buff); delim != end(&delim_buff); delim++) {
+            if (*it == *delim) {
+                if (!is_empty_ignored || len(&token) != 0)
+                    push(out_tokens, token);
+                token.buffer += token.cap + 1;
+                token.cap = 0;
+                goto for_end;
+            }
+        }
+        token.cap++;
+        for_end: ;
+    }
+    push(out_tokens, token);
+}
 
 using dstr = Dynamic_Array<char>;
 
@@ -175,6 +195,10 @@ dstr join(sbuff<dstr, append_str_count> strings) {
     return first;
 }
 
+
+void to_str(sstrb *out_sb, u32 value) {
+    out_sb->len = sprintf(out_sb->buffer, "%u", value);
 }
 
+}
 

@@ -103,4 +103,17 @@ bool read_whole(dstrb *out_str, const char* file_name) {
     return true;
 }
 
+template <typename t_buff>
+bool output_to_file(const char* file_name, t_buff buffer) {
+
+    FILE* file = fopen(file_name, "w");
+    if (file == null) {
+        return false;
+    }
+
+    fwrite(beginp(&buffer), sizeof(typename t_buff::type), len(&buffer), file);
+    fclose(file);
+    return true;
+}
+
 } // namespace cp

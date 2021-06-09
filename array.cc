@@ -72,9 +72,9 @@ struct Static_Array {
     T buffer[t_cap];
     u32 len;
     
-    constexpr u32 cap() {
-        return t_cap;
-    }
+    // explicit Static_Array() = default;
+    // Static_Array(u32 _len=0)
+    // : len(_len) {}
     
     T& operator[](u32 index) {
         assert(("Index out of range", index < t_cap));
@@ -96,6 +96,12 @@ template <u32 t_cap>
 using sarrf = Static_Array<f32, t_cap>;
 template <u32 t_cap>
 using sarrd = Static_Array<f64, t_cap>;
+
+template <typename T, u32 t_cap>
+inline void init(sarr<T, t_cap> *self, u32 init_len=0) {
+    assert(init_len <= t_cap);
+    self->len = init_len; 
+};
 
 template <typename T, u32 t_cap>
 inline u32 cap(sarr<T, t_cap> *self) { return t_cap; }

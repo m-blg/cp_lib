@@ -96,6 +96,7 @@ struct Buffer_Iterator {
     T* ptr;
 
     T* operator->();
+    operator bool();
 
     typedef T type;
 };
@@ -114,6 +115,8 @@ void prev(buff_iter<T> *it, u32 step=1) {
 
 template <typename T>
 T* Buffer_Iterator<T>::operator->() {return this->ptr;}
+template <typename T>
+Buffer_Iterator<T>::operator bool() {return (this->ptr != null);}
 template <typename T>
 T& operator*(const buff_iter<T>& it) {return *it.ptr;}
 template <typename T>
