@@ -37,6 +37,10 @@ namespace cp {
             return *this;
         }
 
+        vec2<S> operator*(vec2<S> other) {
+            return {a1 * other.x + a2 * other.y, b1 * other.x + b2 * other.y};
+        }
+
         bool operator==(Matrix2x2& other) {
             return (a1 == other.a1 && a2 == other.a2 && 
                     b1 == other.b1 && b2 == other.b2);
