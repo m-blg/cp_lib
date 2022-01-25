@@ -35,14 +35,14 @@ Dynamic_Buffer<char>::Dynamic_Buffer(const char* c_str) {
     cap = c_str_len;
 }
 
-template <typename T>
-u32 len(String<T> *self) {
-    return cap(self);
-}
+// template <typename T>
+// u32 len(String<T> self) {
+//     return cap(self);
+// }
 
 template <typename T>
 void copy(T* dst_ptr, String<T> src) {
-    memcpy(dst_ptr, beginp(&src), sizeof(T) * len(&src));
+    memcpy(dst_ptr, beginp(&src), sizeof(T) * len(src));
 }
 
 void print_fmt(dbuff<char> self, const char* item_fmt="%c") {
@@ -55,12 +55,12 @@ void print(dbuff<char> self) {
 
 template <typename T>
 bool operator==(String<T> f, String<T> s)  {
-    if (len(&f) != len(&s)) {
+    if (len(f) != len(s)) {
         return false;
     } else {
-        auto it_f = begin(&f);
-        auto it_s = begin(&s);
-        for (; it_f != end(&f); it_f++, it_s++) {
+        auto it_f = begin(f);
+        auto it_s = begin(s);
+        for (; it_f != end(f); it_f++, it_s++) {
             if (*it_f != *it_s) return false;
         }
         return true;
@@ -69,16 +69,7 @@ bool operator==(String<T> f, String<T> s)  {
 
 template <typename T>
 bool operator!=(String<T> f, String<T> s)  {
-    if (len(&f) != len(&s)) {
-        return true;
-    } else {
-        auto it_f = begin(&f);
-        auto it_s = begin(&s);
-        for (; it_f != end(&f); it_f++, it_s++) {
-            if (*it_f != *it_s) return true;
-        }
-        return false;
-    }
+    return !(f == s);
 }
 
 template <typename T>
@@ -91,18 +82,18 @@ str to_str(dstrb sb) {
 
 template <typename T, typename t_token_buff>
 void cat(Dynamic_String_Buffer<T> *out_sb, t_token_buff tokens) {
-    u32 total_len = len(out_sb);
-    for (auto it = begin(&tokens); it != end(&tokens); it++) {
-        total_len += len(it.ptr);
+    u32 total_len = len(*out_sb);
+    for (auto it = begin(tokens); it != end(tokens); it++) {
+        total_len += len(*it);
     }
     if (out_sb->cap < total_len) {
         resize(&out_sb->db, total_len);
     }
 
     // append
-    for (auto it = begin(&tokens); it != end(&tokens); it++) {
-        copy(beginp(out_sb) + len(out_sb), *it);
-        out_sb->len += len(it.ptr);
+    for (auto it = begin(tokens); it != end(tokens); it++) {
+        copy(beginp(*out_sb) + len(*out_sb), *it);
+        out_sb->len += len(*it);
     }
 }
 
@@ -110,32 +101,32 @@ template <typename T, u32 t_cap>
 using Static_String_Buffer = Static_Array<T, t_cap>;
 using sstrb = Static_String_Buffer<char, 32>;
 
-str to_str(sstrb *sb) {
-    return {sb->buffer, sb->len};
+str to_str(sstrb &sb) {
+    return {sb.buffer, sb.len};
 }
 
 template <typename T, u32 t_cap, typename t_token_buff>
 void cat(Static_String_Buffer<T, t_cap> *out_sb, t_token_buff tokens) {
-    u32 total_len = len(out_sb);
-    for (auto it = begin(&tokens); it != end(&tokens); it++) {
-        total_len += len(it.ptr);
+    u32 total_len = len(*out_sb);
+    for (auto it = begin(tokens); it != end(tokens); it++) {
+        total_len += len(*it);
     }
     assert(t_cap >= total_len);
 
     // append
-    for (auto it = begin(&tokens); it != end(&tokens); it++) {
-        copy(beginp(out_sb) + len(out_sb), *it);
-        out_sb->len += len(it.ptr);
+    for (auto it = begin(tokens); it != end(tokens); it++) {
+        copy(beginp(*out_sb) + len(*out_sb), *it);
+        out_sb->len += len(*it);
     }
 }
 
 
 template <typename T, typename t_arr>
 void split(t_arr *out_tokens, String<T> s, T delim, bool is_empty_ignored=true) {
-    String<T> token = { beginp(&s), 0 };
-    for (auto it = begin(&s); it != end(&s); it++) {
+    String<T> token = { beginp(s), 0 };
+    for (auto it = begin(s); it != end(s); it++) {
         if (*it == delim) {
-            if (!is_empty_ignored || len(&token) != 0)
+            if (!is_empty_ignored || len(token) != 0)
                 push(out_tokens, token);
             token.buffer += token.cap + 1;
             token.cap = 0;
@@ -148,11 +139,11 @@ void split(t_arr *out_tokens, String<T> s, T delim, bool is_empty_ignored=true) 
 
 template <typename t_arr, typename t_delim_buff>
 void split(t_arr *out_tokens, typename t_arr::type s, t_delim_buff delim_buff, bool is_empty_ignored=true) {
-    typename t_arr::type token = { beginp(&s), 0 };
-    for (auto it = begin(&s); it != end(&s); it++) {
-        for (auto delim = begin(&delim_buff); delim != end(&delim_buff); delim++) {
+    typename t_arr::type token = { beginp(s), 0 };
+    for (auto it = begin(s); it != end(s); it++) {
+        for (auto delim = begin(delim_buff); delim != end(delim_buff); delim++) {
             if (*it == *delim) {
-                if (!is_empty_ignored || len(&token) != 0)
+                if (!is_empty_ignored || len(token) != 0)
                     push(out_tokens, token);
                 token.buffer += token.cap + 1;
                 token.cap = 0;
@@ -174,15 +165,15 @@ void init(dstr *self, const char* c_str) {
     self->len = init_cap;
 }
 
-dstr *cat(dstr *first, dstr *second) {
+dstr *cat(dstr *first, dstr second) {
     append(first, second);
     return first;
 }
 
 template <u32 append_str_count>
 dstr *cat(dstr *first, sbuff<dstr, append_str_count> others) {
-    for (auto it = begin(&others); it < end(others); it++) 
-        append(first, it);
+    for (auto it = begin(others); it < end(others); it++) 
+        append(first, *it);
     return first;
 }
 
@@ -190,7 +181,7 @@ dstr *cat(dstr *first, sbuff<dstr, append_str_count> others) {
 template <u32 append_str_count>
 dstr join(sbuff<dstr, append_str_count> strings) {
     dstr first; init(&first);
-    for (auto it = begin(&strings); it < end(strings); it++) 
+    for (auto it = begin(strings); it < end(strings); it++) 
         append(first, it);
     return first;
 }

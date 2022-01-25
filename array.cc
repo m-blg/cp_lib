@@ -104,23 +104,23 @@ inline void init(sarr<T, t_cap> *self, u32 init_len=0) {
 };
 
 template <typename T, u32 t_cap>
-inline u32 cap(sarr<T, t_cap> *self) { return t_cap; }
+inline u32 cap(sarr<T, t_cap> &self) { return t_cap; }
 template <typename T, u32 t_cap>
-inline u32 len(sarr<T, t_cap> *self) { return self->len; }
+inline u32 len(sarr<T, t_cap> &self) { return self.len; }
 template <typename T, u32 t_cap>
-inline T* beginp(sarr<T, t_cap> *self) { return self->buffer; }
+inline T* beginp(sarr<T, t_cap> &self) { return self.buffer; }
 template <typename T, u32 t_cap>
-inline T* endp(sarr<T, t_cap> *self) { return self->buffer + self->len; }
+inline T* endp(sarr<T, t_cap> &self) { return self.buffer + self.len; }
 template <typename T, u32 t_cap>
-inline buff_iter<T> begin(sarr<T, t_cap> *self) { return {self->buffer}; }
+inline buff_iter<T> begin(sarr<T, t_cap> &self) { return {self.buffer}; }
 template <typename T, u32 t_cap>
-inline buff_iter<T> end(sarr<T, t_cap> *self) { return {self->buffer + self->len}; }
+inline buff_iter<T> end(sarr<T, t_cap> &self) { return {self.buffer + self.len}; }
 
 template <typename T, u32 t_cap>
-inline bool is_empty(sarr<T, t_cap> *self) { return (self->len == 0); }
+inline bool is_empty(sarr<T, t_cap> &self) { return (self.len == 0); }
 
 template <typename T, u32 t_cap>
-inline T& back(sarr<T, t_cap> *self) { return self->buffer[self->len-1]; }
+inline T& back(sarr<T, t_cap> &self) { return self.buffer[self.len-1]; }
 
 
 
@@ -147,13 +147,13 @@ void remove(sarr<T, t_cap> *self, u32 index) {
 }
 
 template <typename T, u32 t_cap>
-void print_fmt(sarr<T, t_cap> *self, const char* item_fmt) {
-    print_fmt(self->buffer, self->len, item_fmt);
+void print_fmt(sarr<T, t_cap> self, const char* item_fmt) {
+    print_fmt(self.buffer, self.len, item_fmt);
 }
 
 template <typename T, u32 t_cap>
-void print(sarr<T, t_cap> *self) {
-    print(self->buffer, self->len);
+void print(sarr<T, t_cap> self) {
+    print(self.buffer, self.len);
 }
 
 
@@ -165,7 +165,7 @@ struct Dynamic_Array {
             T* buffer;
             u32 cap;
         };
-        dbuff<T> db;
+        dbuff<T> _dbuff;
     };
     u32 len;
 
@@ -220,23 +220,55 @@ void shut(darr<const T> *self) {
 
 
 template <typename T>
-inline u32 cap(darr<T> *self) { return self->cap; }
+inline u32 cap(darr<T> self) { return self.cap; }
 template <typename T>
-inline u32 len(darr<T> *self) { return self->len; }
+inline u32 len(darr<T> self) { return self.len; }
 template <typename T>
-inline T* beginp(darr<T> *self) { return self->buffer; }
+inline T* beginp(darr<T> self) { return self.buffer; }
 template <typename T>
-inline T* endp(darr<T> *self) { return self->buffer + self->len; }
+inline T* endp(darr<T> self) { return self.buffer + self.len; }
 template <typename T>
-inline buff_iter<T> begin(darr<T> *self) { return {self->buffer}; }
+inline buff_iter<T> begin(darr<T> self) { return {self.buffer}; }
 template <typename T>
-inline buff_iter<T> end(darr<T> *self) { return {self->buffer + self->len}; }
+inline buff_iter<T> end(darr<T> self) { return {self.buffer + self.len}; }
 
 template <typename T>
-inline bool is_empty(darr<T> *self) { return (self->len == 0); }
+inline T& head(darr<T> self) {
+    assert(len(self) > 0);
+    return *self.buffer;
+}
+template <typename T>
+inline darr<T> tail(darr<T> self) {
+    assert(len(self) > 0);
+    return {self.buffer + 1, self.cap, self.len - 1};
+}
 
 template <typename T>
-inline T& back(darr<T> *self) { return self->buffer[self->len-1]; }
+inline bool is_empty(darr<T> self) { return (self.len == 0); }
+
+template <typename T>
+inline T& back(darr<T> self) { return self.buffer[self.len-1]; }
+
+
+template <class T>
+darr<T> copy(darr<T> a) {
+    darr<T> na = {
+        m_alloc<T>(len(a)),
+        cap(a),
+        len(a)
+    };
+
+    memcpy(na.buffer, a.buffer, sizeof(T) * len(a));
+
+    return na;
+}
+
+// convert only sequence you abstracting, e.g. (a[0],..,a[len-1]) 
+template <class T>
+dbuff<T> to_dbuff(darr<T> a) {
+    return {a.buffer, a.len};
+}
+
 
 
 //darr methods
@@ -244,9 +276,9 @@ inline T& back(darr<T> *self) { return self->buffer[self->len-1]; }
 template <typename T>
 void fit_len(darr<T> *self) {
     if (self->len > self->cap) {
-        resize(&self->db, max(self->len, 2 * self->cap));
+        resize(&self->_dbuff, max(self->len, 2 * self->cap));
     } else if (self->len < self->cap / 2) {
-        resize(&self->db, self->cap / 2);
+        resize(&self->_dbuff, self->cap / 2);
     }
 }
 
@@ -286,7 +318,7 @@ template <typename T>
 void pop(darr<T> *self) {
     assert(self->len > 0);
     if (self->len <= self->cap / 2u) {
-        dresize(&self->buffer, &self->cap, self->cap / 2);
+        resize(&self->buffer, &self->cap, self->cap / 2);
     }
     self->len--;
 }
@@ -327,12 +359,12 @@ void push_range(darr<T> *self, sbuff<T, t_items_count>&& items) {
 }
 
 template <typename T>
-void append(darr<T> *self, darr<T> *arr) {
+void append(darr<T> *self, darr<T> arr) {
     if (self->len + len(arr) > self->cap) {
         resize( &self->buffer, &self->cap, max(len(arr), 2 * self->cap) );
     }
 
-    memcpy(self->buffer + self->len, arr->buffer, len(arr) * sizeof(T));
+    memcpy(self->buffer + self->len, arr.buffer, len(arr) * sizeof(T));
     self->len += len(arr);
 }
 

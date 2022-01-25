@@ -126,6 +126,10 @@ template<typename T>
 T magnitude(vec2<T> self) {
     return sqrt(self.x * self.x + self.y * self.y);
 }
+template<typename T>
+T norm(vec2<T> self) {
+    return magnitude(self);
+}
 
 template<typename T>
 vec2<T> normalized(vec2<T> self) {
@@ -278,6 +282,10 @@ bool operator!=(vec3<T> first, vec3<T> second) {
 template <typename T>
 T magnitude(Vector3<T> self) {
     return sqrt(self.x * self.x + self.y * self.y + self.z * self.z);
+}
+template <typename T>
+T norm(Vector3<T> self) {
+    return magnitude(self);
 }
 
 template <typename T>
@@ -442,6 +450,10 @@ bool operator!=(vec4<T> first, vec4<T> second) {
 template <typename T>
 T magnitude(vec4<T> self) {
     return sqrt(self.x * self.x + self.y * self.y + self.z * self.z + self.w * self.w);
+}
+template <typename T>
+T norm(vec4<T> self) {
+    return magnitude(self);
 }
 
 template <typename T>

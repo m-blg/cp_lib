@@ -14,3 +14,30 @@ struct sbuf<int, 32> - wrapper of int[32] with dynamic bounds checking in debug 
 I guess it's simpler/better to use multiple...
 
 Basically I need a way to see where I exceed array/memory_buffer limits.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+16.01.2022
+
+yet again I've stambled upon this problem, solved but yet again not solved. So I deside:
+
+rule: "foo(T *obj)" iff foo modifies self, otherwise "foo(T obj)".
+If obj is gigantic thing, you either rely on compiler cleverness or use & (reference operator) to cure your paranoia
+
+basically if you have smart compiler it doesn't really matter how you pass data to functions.
+but what matter is abillity to use polimorphic functions.
+e.g. if you have foo(int *a) and foo(float b) you can't call it like: "g(T a) { foo(a); }", due to diffrent conventions.
+
+So 
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+22.01.2022
+
+type classes:
+iterable:
+    functions: begin, end
+    typedef iter
+
+contiguous:
+    functions: beginp, endp
