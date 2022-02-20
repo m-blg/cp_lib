@@ -467,4 +467,30 @@ T dot(vec4<T> first, vec4<T> second) {
     return first.x * second.x + first.y * second.y + first.z * second.z + first.w * second.w;
 }
 
+
+// printing
+template <typename T>
+void print(vec2<T> v) {
+    printf("(");
+    print(v.x); printf(", "); 
+    print(v.y); printf(")");
+}
+
+template <typename T>
+void print(vec3<T> v) {
+    printf("(");
+    print(v.x); printf(", "); 
+    print(v.y); printf(", "); 
+    print(v.z); printf(")");
+}
+
+template <typename T>
+void print(vec4<T> v) {
+    printf("(");
+    print(v.x); printf(", "); 
+    print(v.y); printf(", "); 
+    print(v.z); printf(", "); 
+    print(v.w); printf(")");
+}
+
 }

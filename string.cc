@@ -42,7 +42,7 @@ Dynamic_Buffer<char>::Dynamic_Buffer(const char* c_str) {
 
 template <typename T>
 void copy(T* dst_ptr, String<T> src) {
-    memcpy(dst_ptr, beginp(&src), sizeof(T) * len(src));
+    memcpy(dst_ptr, beginp(src), sizeof(T) * len(src));
 }
 
 void print_fmt(dbuff<char> self, const char* item_fmt="%c") {
@@ -76,6 +76,21 @@ template <typename T>
 using Dynamic_String_Buffer = Dynamic_Array<T>;
 using dstrb = Dynamic_String_Buffer<char>;
 
+dstrb dstrb_from(const char* c_str) {
+    str s = str{c_str};
+    dstrb sb; init(&sb, len(s));
+    sb.len = len(s);
+    copy(sb._dbuff, s);
+    return sb;
+}
+
+dstrb dstrb_from(str s) {
+    dstrb sb; init(&sb, len(s));
+    sb.len = len(s);
+    copy(sb._dbuff, s);
+    return sb;
+}
+
 str to_str(dstrb sb) {
     return {sb.buffer, sb.len};
 }
@@ -87,7 +102,7 @@ void cat(Dynamic_String_Buffer<T> *out_sb, t_token_buff tokens) {
         total_len += len(*it);
     }
     if (out_sb->cap < total_len) {
-        resize(&out_sb->db, total_len);
+        resize(&out_sb->_dbuff, total_len);
     }
 
     // append
@@ -154,6 +169,16 @@ void split(t_arr *out_tokens, typename t_arr::type s, t_delim_buff delim_buff, b
         for_end: ;
     }
     push(out_tokens, token);
+}
+
+
+//u32 str_max_len()
+
+template <typename... Ts>
+void sprint_fmt(dstrb *self, const char* fmt, Ts... args) {
+    u32 max_len = snprintf(null, 0, fmt, args...);
+    reserve(self, max_len);
+    self->len += sprintf(endp(*self), fmt, args...);
 }
 
 using dstr = Dynamic_Array<char>;

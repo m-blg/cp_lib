@@ -11,55 +11,33 @@
 namespace cp {
 
 
-inline void print(u32 value, const char* end = "") {
-    printf("%u%s", value, end);
+inline void print(u32 value) {
+    printf("%u", value);
 }
-inline void print(u64 value, const char* end = "") {
-    printf("%lu%s", value, end);
+inline void print(u64 value) {
+    printf("%lu", value);
 }
-inline void print(i32 value, const char* end = "") {
-    printf("%i%s", value, end);
+inline void print(i32 value) {
+    printf("%i", value);
 }
-inline void print(i64 value, const char* end = "") {
-    printf("%li%s", value, end);
+inline void print(i64 value) {
+    printf("%li", value);
 }
-inline void print(f32 value, const char* end = "") {
-    printf("%f%s", value, end);
+inline void print(f32 value) {
+    printf("%f", value);
 }
-inline void print(f64 value, const char* end = "") {
-    printf("%lf%s", value, end);
+inline void print(f64 value) {
+    printf("%lf", value);
 }
-inline void print(char value, const char* end = "") {
-    printf("%c%s", value, end);
+inline void print(char value) {
+    printf("%c", value);
 }
-inline void print(bool value, const char* end = "") {
-    printf("%i%s", value, end);
+inline void print(bool value) {
+    printf("%i", value);
 }
-inline void print(const char* value, const char* end = "") {
-    printf("%s%s", value, end);
+inline void print(const char* value) {
+    printf("%s", value);
 }
-
-template <typename T>
-void print(vec2<T> v) {
-    print(v.x); printf(" "); 
-    print(v.y);
-}
-
-template <typename T>
-void print(vec3<T> v) {
-    print(v.x); printf(" "); 
-    print(v.y); printf(" "); 
-    print(v.z);
-}
-
-template <typename T>
-void print(vec4<T> v) {
-    print(v.x); printf(" "); 
-    print(v.y); printf(" "); 
-    print(v.z); printf(" "); 
-    print(v.w);
-}
-
 
 template <typename t_c_arg, typename... t_rest_args>
 void print(t_c_arg c_arg, t_rest_args... rest_args) {
@@ -72,6 +50,16 @@ void print(t_c_arg c_arg, t_rest_args... rest_args) {
 //void print(Args... args) {
     //print(args...);
 //}
+
+template <class list_t>
+void print(list_t list) {
+    print('[');
+    for (auto it = begin(list); it != end(list); it++) {
+        print(*it);
+        print(", ");
+    }
+    print(']');
+}
 
 
 
@@ -88,32 +76,38 @@ void read_array(dbuff<T> buffer, FILE* file) {
     fread(buffer.buffer, sizeof(T), cap(&buffer), file);
 }
 
-bool read_whole(dstrb *out_str, const char* file_name) {
-
+dstrb read(const char* file_name) 
+{
     FILE* file = fopen(file_name, "r");
     if (file == null) {
-        return false;
+        // set error flag
+        return {};
     }
 
     i64 fsize = file_size(file);
-    init(out_str, fsize);
-    out_str->len = fsize;
-    fread(beginp(out_str), sizeof(u8), cap(out_str), file);
+    dstrb sb;
+    init(&sb, fsize);
+    sb.len = fsize;
+    fread(beginp(sb), sizeof(u8), cap(sb), file);
     fclose(file);
-    return true;
+
+    return sb;
 }
 
-template <typename t_buff>
-bool output_to_file(const char* file_name, t_buff buffer) {
+//template <typename buff_t>
+//bool fprint(buff_t b, FILE* file) {
+    //fwrite(beginp(&b), sizeof(typename buff_t::type), len(&b), file);
+//}
 
+template <typename buff_t>
+void write(buff_t b, const char* file_name) {
     FILE* file = fopen(file_name, "w");
     if (file == null) {
-        return false;
+        // set error flag
+        return;
     }
 
-    fwrite(beginp(&buffer), sizeof(typename t_buff::type), len(&buffer), file);
+    fwrite(beginp(b), sizeof(typename buff_t::type), len(b), file);
     fclose(file);
-    return true;
 }
-
 } // namespace cp

@@ -16,6 +16,13 @@ namespace cp {
     }
 
     template <typename T>
+    bool
+    is_bounded(T value, T min_value, T max_value) {
+        return (min_value <= value && value <= max_value);
+    }
+
+
+    template <typename T>
     inline void swap(T *first, T *second) {
         T temp = *first;
         *first = *second;

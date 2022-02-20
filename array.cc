@@ -269,6 +269,10 @@ dbuff<T> to_dbuff(darr<T> a) {
     return {a.buffer, a.len};
 }
 
+template <class list_t>
+auto to_darr(list_t l) {
+    return darr<typename list_t::type>{beginp(l), len(l), len(l)};
+}
 
 
 //darr methods
@@ -289,8 +293,17 @@ void resize(darr<T> *self, u32 new_len) {
 }
 
 template <typename T>
+void reserve(darr<T> *self, u32 res_len) {
+    u32 d = cap(*self) - len(*self);
+    if (d < res_len) {
+        u32 new_cap = max(len(*self) + d, 2 * cap(*self));
+        resize(&self->_dbuff, new_cap);
+    }
+}
+
+template <typename T>
 void clear(darr<T> *self, i32 value=0) {
-    memset(self->buffer, value, self->cap);
+    resize(&self->_dbuff, 0);
     self->len = 0;
 }
 
@@ -367,6 +380,7 @@ void append(darr<T> *self, darr<T> arr) {
     memcpy(self->buffer + self->len, arr.buffer, len(arr) * sizeof(T));
     self->len += len(arr);
 }
+
 
 
 

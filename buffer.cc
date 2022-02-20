@@ -4,6 +4,7 @@
 
 #include "mbgldef.h"
 #include "memory.cc"
+#include "basic.cc"
 #include <string.h>
 #include <cassert>
 
@@ -153,20 +154,16 @@ auto sum(t_buff buffer){
 // generic stuff
 
 template <typename T, template <typename> class t_buff>
-inline u32 cap(t_buff<T> *buffer) { return buffer->cap; }
+inline u32 cap(t_buff<T> buffer) { return buffer->cap; }
 template <typename T, template <typename> class t_buff>
-inline u32 len(t_buff<T> *buffer) { return buffer->cap; }
+inline u32 len(t_buff<T> buffer) { return buffer->cap; }
 template <typename T, template <typename> class t_buff>
-inline u32 size(t_buff<T> *buffer) { return sizeof(T) * buffer->cap; }
+inline u32 size(t_buff<T> buffer) { return sizeof(T) * buffer->cap; }
 template <typename T, template <typename> class t_buff>
-inline T* beginp(t_buff<T> *buffer) { return buffer->buffer; }
+inline T* beginp(t_buff<T> buffer) { return buffer->buffer; }
 template <typename T, template <typename> class t_buff>
-inline T* endp(t_buff<T> *buffer) { return buffer->buffer + buffer->cap; }
-template <typename T, template <typename> class t_dst_buff, template <typename> class t_src_buff>
-void copy(t_dst_buff<T> *dst_buff, t_src_buff<T> *src_buff) { 
-    assert(cap(dst_buff) >= cap(src_buff));
-    memcpy(beginp(dst_buff), beginp(src_buff), sizeof(T) * cap(src_buff));
-}
+inline T* endp(t_buff<T> buffer) { return buffer->buffer + buffer->cap; }
+
 template <class t1, class t2>
 void copy(t1 dst_buff, t2 src_buff) { 
     assert(cap(dst_buff) >= cap(src_buff));
@@ -197,7 +194,7 @@ bool is_empty(list_t list) {
 
 template <class func_t, class t1_t>
 void apply(func_t f, t1_t list) {
-    for (auto it = begin(&list); it != end(&list); it++) {
+    for (auto it = begin(list); it != end(list); it++) {
         f(it.ptr);
     }
 }
@@ -216,6 +213,8 @@ t1 foldr(func_t f, t1 acc, t2 list) {
         return acc;
     return f(&head(list), foldr(f, acc, tail(list)));
 }
+
+
 
 
 // Static Buffer
@@ -250,6 +249,8 @@ using sbuffb = Static_Buffer<bool, t_cap>;
 
 template <typename T, u32 t_cap>
 inline u32 cap(sbuff<T, t_cap> &self) { return t_cap; }
+template <typename T, u32 t_cap>
+inline u32 len(sbuff<T, t_cap> &self) { return t_cap; }
 template <typename T, u32 t_cap>
 inline u32 size(sbuff<T, t_cap> &self) { return sizeof(T) * t_cap; }
 template <typename T, u32 t_cap>
@@ -661,11 +662,11 @@ void init(desbuff *self, u32 init_cap) { init(&self->buffer, init_cap); }
 void shut(desbuff *self) { shut(&self->buffer); }
 
 
-inline u32 cap(desbuff *buffer) { return cap(&buffer->buffer); }
-inline u8* beginp(desbuff *buffer) { return beginp(&buffer->buffer); }
-inline u8* endp(desbuff *buffer) { return endp(&buffer->buffer); }
-inline buff_iter<u8> begin(desbuff *buffer) { return begin(&buffer->buffer); }
-inline buff_iter<u8> end(desbuff *buffer) { return end(&buffer->buffer); }
+inline u32 cap(desbuff *buffer) { return cap(buffer->buffer); }
+inline u8* beginp(desbuff *buffer) { return beginp(buffer->buffer); }
+inline u8* endp(desbuff *buffer) { return endp(buffer->buffer); }
+inline buff_iter<u8> begin(desbuff *buffer) { return begin(buffer->buffer); }
+inline buff_iter<u8> end(desbuff *buffer) { return end(buffer->buffer); }
 
 //namespace mdbuffer {
 //template <typename T>
