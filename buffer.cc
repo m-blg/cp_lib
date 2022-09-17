@@ -171,7 +171,7 @@ void copy(t1 dst_buff, t2 src_buff) {
 }
 template <typename T, template<typename> class t_buff>
 buff_iter<T> begin(t_buff<T> *self) {
-    return {beginp(self)};
+    return {beginp(*self)};
 }
 template <typename T, template<typename> class t_buff>
 buff_iter<T> end(t_buff<T> *self) {

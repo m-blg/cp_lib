@@ -118,7 +118,7 @@ mat4f vec_rot_mat4(quat q) {
         2 * (q.w * q.w + q.x * q.x) - 1, 2 * (q.x * q.y - q.w * q.z), 2 * (q.w * q.y + q.x * q.z), 0,
         2 * (q.w * q.z + q.x * q.y), 2 * (q.w * q.w + q.y * q.y) - 1, 2 * (q.y * q.z - q.w * q.x), 0,
         2 * (q.x * q.z - q.w * q.y), 2 * (q.w * q.x + q.y * q.z), 2 * (q.w * q.w + q.z * q.z) - 1, 0,
-        0,                           0,                           0,                               1
+        0                          , 0                          , 0                              , 1,
     };
 }
 
