@@ -1,0 +1,143 @@
+
+T* p; - pointer to a value or array of values or just arbitraty chunk of memory.
+Expected to be changed.
+
+T *p; equivalent to T& p; meaning reference to value.
+
+
+Variants:
+
+1:
+
+struct sbuf<int, 32> - wrapper of int[32] with dynamic bounds checking in debug mode.
+
+I guess it's simpler/better to use multiple...
+
+Basically I need a way to see where I exceed array/memory_buffer limits.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+16.01.2022
+
+yet again I've stambled upon this problem, solved but yet again not solved. So I deside:
+
+rule: "foo(T *obj)" iff foo modifies self, otherwise "foo(T obj)".
+If obj is gigantic thing, you either rely on compiler cleverness or use & (reference operator) to cure your paranoia
+
+basically if you have smart compiler it doesn't really matter how you pass data to functions.
+but what matter is abillity to use polimorphic functions.
+e.g. if you have foo(int *a) and foo(float b) you can't call it like: "g(T a) { foo(a); }", due to diffrent conventions.
+
+So 
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+22.01.2022
+
+type classes:
+iterable:
+    functions: begin, end
+    typedef iter
+
+contiguous:
+    functions: beginp, endp
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+26.09.2022
+
+on 16.01.22 note. Basically to unify call conventions we can use handles instead of pointers.
+Ex.
+
+typedef typep type*; // typep - handle
+
+// wide handle basically
+struct dbuff {
+    type* ptr;
+    u32 cap;
+};
+
+In fact we can do for implicitness:
+
+struct Data<T> {
+    T
+    buffer[1024];
+};
+
+using handle<T> = Data<T>*;
+using mut_handle<T> = handle<T>;
+
+void
+process(handle<T>) {}
+
+bool
+check(mut_handle<T>) {}
+
+
+struct handle<T> {
+    T*
+    buffer;
+    u32 cap;
+};
+
+using mut_handle<T> = handle<T>*;
+
+
+
+void
+process(handle<T>) {}
+
+bool
+check(mut_handle<T>) {}
+
+// STYLE
+Next on outer functions vs static methods.
+Ex.
+
+dstrb 
+dstrb::from(handle t);
+
+// vs
+
+dstrb
+dstrb_from(handle t);
+
+Stylistically I prefer first, but practically you can't extend functionality with methods without
+modifying original struct. So second one allows unified style (C style).
+
+But if you have type params:
+
+
+dstrb<T>::from(handle t);
+
+// vs
+
+dstrb
+dstrb_from<T>(handle t);
+
+// with alliases
+
+mat4f::id(); // better
+
+// vs
+
+mat4_id<f32>();
+
+
+Solution: disign lang extension.
+
+impl blocks like in rust.
+
+impl mat4<T> 
+{
+    mat4<T>
+    id() {...}
+}
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+My problem with rust is its style. It imposes oop dot style: object.method()
+For me function - first class citizen, so it should come first: process(object)
+
+In rust you can reverse it but with being fully exlicit: Object_type::method(&object)
